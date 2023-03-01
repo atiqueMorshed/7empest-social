@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+    mongodb:
+        image: mongo
+        volumes:
+            - mongodbdata:/data/db # Database persistance.
+        ports:
+            - 27012:27017 # exposing port to connect to MongoDB Compass.
+        container_name: 7empest-social-mongodb
+
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile.dev
+        image: atiquemorshed/7empest-social-backend
+        volumes:
+            - ./backend:/app
+        ports:
+            - 4000:4000
+        env_file:
+            - ./backend/.env
+        depends_on:
+            - mongodb
+        container_name: 7empest-social-backend-app
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile.dev
+        image: atiquemorshed/7empest-social-frontend
+        volumes:
+            - ./frontend:/app
+        ports:
+            - 3000:3000
+        env_file:
+            - ./frontend/.env.local
+        depends_on:
+            - backend
+        stdin_open: true
+        tty: true
+        container_name: 7empest-social-frontend-app
+
+volumes:
+    mongodbdata:

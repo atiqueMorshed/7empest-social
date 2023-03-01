@@ -1,0 +1,49 @@
+{
+	"dependencies": {
+		"bcrypt": "^5.1.0",
+		"cors": "^2.8.5",
+		"dotenv": "^16.0.3",
+		"express": "^4.18.2",
+		"express-rate-limit": "^6.7.0",
+		"gridfs-stream": "^1.1.1",
+		"helmet": "^6.0.1",
+		"jsonwebtoken": "^9.0.0",
+		"mongoose": "^6.10.0",
+		"morgan": "^1.10.0",
+		"multer": "^1.4.4",
+		"multer-gridfs-storage": "^5.0.2"
+	},
+	"name": "7empest-backend",
+	"version": "1.0.0",
+	"description": "7empest Social Media backend app",
+	"main": "index.js",
+	"type": "module",
+	"devDependencies": {
+		"eslint": "^8.35.0",
+		"eslint-config-prettier": "^8.6.0",
+		"eslint-plugin-prettier": "^4.2.1",
+		"nodemon": "^2.0.20",
+		"prettier": "^2.8.4"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node server.js",
+		"start:dev": "nodemon server.js",
+		"lint": "eslint .",
+		"lint:fix": "eslint --fix ."
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com/atiqueMorshed/7empest-social.git"
+	},
+	"keywords": [
+		"7empest",
+		"backend"
+	],
+	"author": "Atique Morshed",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/atiqueMorshed/7empest-social/issues"
+	},
+	"homepage": "https://github.com/atiqueMorshed/7empest-social#readme"
+}
