@@ -1,9 +1,9 @@
 import ErrorResponse from "../utils/ErrorResponse.js";
 
-const errorHandler = (err, req, res) => {
+// eslint-disable-next-line no-unused-vars
+const errorHandler = (err, req, res, next) => {
 	let error = { ...err };
 	error.message = err.message;
-
 	if (err.code === 11000) {
 		const message = "Duplicate not allowed.";
 		error = new ErrorResponse(message, 400);

@@ -12,15 +12,39 @@ import sendToken from "../utils/sendToken.js";
 // @route /auth/register POST
 // @body username, email, password
 export const register = asyncHandler(async (req, res, next) => {
-	const { username, email, password } = req.body;
-
-	if (!username || !email || !password)
-		return next(new ErrorResponse("Please fill in the required fields.", 400));
-
-	const user = await User.create({
+	const {
+		firstname,
+		lastname,
 		username,
 		email,
 		password,
+		confirmPassword,
+		location,
+	} = req.body;
+
+	if (
+		!firstname ||
+		!lastname ||
+		!username ||
+		!email ||
+		!password ||
+		!confirmPassword ||
+		!location
+	)
+		return next(new ErrorResponse("Please fill in the required fields.", 400));
+
+	if (password !== confirmPassword)
+		return next(
+			new ErrorResponse("Confirm password should match with password.", 406),
+		);
+
+	const user = await User.create({
+		firstname,
+		lastname,
+		username,
+		email,
+		password,
+		location,
 	});
 	await sendToken(res, user, 200);
 });
@@ -158,18 +182,20 @@ export const forgotPassword = async (req, res, next) => {
 
 // @access Public
 // @desc Refresh Access Token
-// @route /auth/refresh/ POST
+// @route /auth/refresh/ GET
 export const refresh = (req, res, next) => {
 	const refreshToken = req.cookies?.tempestRefreshToken;
+	const userEmail = req.cookies?.tempestUserEmail;
 
 	if (!refreshToken) return next(new ErrorResponse("Not authorized.", 401));
+	if (!userEmail) return next(new ErrorResponse("Not authorized.", 401));
 
 	jwt.verify(
 		refreshToken,
-		process.env.JWT_REFRESH_TOKEN,
+		process.env.JWT_REFRESH_SECRET,
 		asyncHandler(async (err, decoded) => {
 			if (err) {
-				clearRefreshCookie();
+				clearRefreshCookie(res);
 				return next(
 					new ErrorResponse(`REFRESH TOKEN ERROR: ${err?.message}`, 403),
 				);
@@ -177,16 +203,22 @@ export const refresh = (req, res, next) => {
 
 			const user = await User.findOne({ _id: decoded.id });
 			if (!user) {
-				clearRefreshCookie();
+				clearRefreshCookie(res);
 				return next(new ErrorResponse("No user found.", 401));
 			}
 
-			if (user.currentRefreshSalt !== decoded.currentRefreshSalt) {
-				clearRefreshCookie();
+			if (user.currentRefreshSalt !== decoded.crs) {
+				clearRefreshCookie(res);
 				return next(new ErrorResponse("Bad Refresh Token.", 406));
 			}
 
+			if (user.email !== userEmail) {
+				clearRefreshCookie(res);
+				return next(new ErrorResponse("Unauthorized Email.", 401));
+			}
+
 			const accessToken = user.getSignedJWTAccessToken();
+			await user.save();
 
 			res.status(200).json({ success: true, accessToken });
 		}),
@@ -198,16 +230,11 @@ export const logout = (req, res, next) => {
 	if (!refreshToken)
 		return res.status(204).json({ success: true, message: "Logged out." });
 
-	res.clearCookie("tempestRefreshToken", {
-		httpOnly: true,
-		secure: true, // https
-		signed: true,
-		sameSite: "none",
-	});
+	clearRefreshCookie(res);
 
 	jwt.verify(
 		refreshToken,
-		process.env.JWT_REFRESH_TOKEN,
+		process.env.JWT_REFRESH_SECRET,
 		asyncHandler(async (err, decoded) => {
 			if (err)
 				return next(

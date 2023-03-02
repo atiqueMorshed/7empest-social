@@ -2,9 +2,4 @@
 .git
 
 node_modules
-.env
-.env.local
-*.env
-.env.*
-
 .cache

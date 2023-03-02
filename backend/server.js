@@ -11,6 +11,7 @@ import { fileURLToPath } from "url";
 import connectDB from "./config/connectDB.js";
 import corsOptions from "./config/corsOptions.js";
 import errorHandler from "./middleware/errorHandler.js";
+import verifyJWT from "./middleware/verifyJWT.js";
 import authRoute from "./routes/auth.js";
 // CONFIG
 const __filename = fileURLToPath(import.meta.url);
@@ -20,7 +21,7 @@ const app = express();
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "2mb", extended: true }));
 app.use(express.urlencoded({ limit: "2mb", extended: true }));
-app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
+app.use(cookieParser());
 
 // Secure app with http headers
 app.use(helmet());
@@ -41,7 +42,11 @@ app.get("/", (req, res) => {
 	res.status(200).send("OK");
 });
 
-app.use("/auth", authRoute);
+app.use("/api/auth", authRoute);
+
+app.get("/secret", verifyJWT, (req, res) => {
+	res.status(200).json({ success: true, message: "VERY SECRET!" });
+});
 
 // Error Handler middleware
 app.use(errorHandler);

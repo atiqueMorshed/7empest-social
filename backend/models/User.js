@@ -4,29 +4,31 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
 const UserSchema = mongoose.Schema({
-	_id: mongoose.Schema.Types.ObjectId,
 	firstname: {
 		type: String,
 		required: [true, "Firstname is required."],
-		minLength: [3, "Must be atleast 3 characters."],
-		maxLength: [10, "Cannot be larger than 10 characters."],
-		match: [/^[A-Za-z]{6,12}$/, "Only alphabets."],
+		minLength: [3, "Firstname must be atleast 3 characters."],
+		maxLength: [10, "Firstname Cannot be larger than 10 characters."],
+		match: [/^[A-Za-z]{3,10}$/, "Firstname can only contain alphabets."],
 	},
 	lastname: {
 		type: String,
 		required: [true, "Lastname is required."],
-		minLength: [3, "Must be atleast 3 characters."],
-		maxLength: [10, "Cannot be larger than 10 characters."],
-		match: [/^[A-Za-z]{6,12}$/, "Only alphabets."],
+		minLength: [3, "Lastname must be atleast 3 characters."],
+		maxLength: [10, "Lastname cannot be larger than 10 characters."],
+		match: [/^[A-Za-z]{3,10}$/, "Lastname can only contain alphabets."],
 	},
 	avatarPath: String,
 	username: {
 		type: String,
 		required: [true, "Username is required."],
 		unique: [true, "Username already in use."],
-		minLength: [6, "Must be atleast 6 characters."],
-		maxLength: [12, "Cannot be larger than 6 characters."],
-		match: [/^[A-Za-z0-9]{6,12}$/, "Only alphabets and numbers."],
+		minLength: [6, "Username must be atleast 6 characters."],
+		maxLength: [12, "Username cannot be larger than 6 characters."],
+		match: [
+			/^[A-Za-z0-9]{6,12}$/,
+			"Username can only contain alphabets and numbers.",
+		],
 	},
 	email: {
 		type: String,
@@ -40,11 +42,13 @@ const UserSchema = mongoose.Schema({
 	password: {
 		type: String,
 		required: [true, "Password is required"],
-		minLength: [6, "Must be atleast 6 characters."],
-		maxLength: [20, "Cannot be larger than 20 characters."],
+		minLength: [6, "Password must be atleast 6 characters."],
 		select: false,
 	},
-	isEmailVerified: Boolean,
+	isEmailVerified: {
+		type: Boolean,
+		default: false,
+	},
 	emailVerificationToken: {
 		verificationToken: {
 			type: String,
@@ -67,12 +71,12 @@ const UserSchema = mongoose.Schema({
 	},
 	location: {
 		type: String,
-		required: [true, "Password is required"],
-		minLength: [2, "Must be atleast 2 characters."],
-		maxLength: [20, "Cannot be larger than 20 characters."],
+		required: [true, "Location is required"],
+		minLength: [2, "Location must be of atleast 2 characters."],
+		maxLength: [20, "Location cannot be larger than 20 characters."],
 		match: [
-			/^[A-Za-z0-9,.\- ]{6,12}$/,
-			"Only alphabets, numbers, whitespace, dash, dot, comma",
+			/^[A-Za-z0-9,.\- ]{2,20}$/,
+			"Location can only contain alphabets, numbers, whitespace, dash, dot, comma",
 		],
 	},
 	occupdation: String,
@@ -112,9 +116,10 @@ UserSchema.methods.matchPasswords = async function (password) {
 };
 
 UserSchema.methods.getSignedJWTAccessToken = function () {
-	this.currentAccessSalt = (this.currentAccessSalt + 1) % 100;
+	const newCAS = (this.currentAccessSalt + 1) % 100;
+	this.currentAccessSalt = newCAS;
 	return jwt.sign(
-		{ id: this._id, cas: this.currentAccessSalt, crs: this.currentRefreshSalt },
+		{ id: this._id, cas: newCAS, crs: this.currentRefreshSalt },
 		process.env.JWT_ACCESS_SECRET,
 		{
 			expiresIn: process.env.JWT_ACCESS_EXPIRE,
