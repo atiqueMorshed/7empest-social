@@ -21,6 +21,7 @@ const app = express();
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "2mb", extended: true }));
 app.use(express.urlencoded({ limit: "2mb", extended: true }));
+// app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
 app.use(cookieParser());
 
 // Secure app with http headers

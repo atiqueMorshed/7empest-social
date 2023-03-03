@@ -10,7 +10,7 @@ const verifyJWT = (req, res, next) => {
 
 	if (!refreshToken) {
 		clearRefreshCookie(res);
-		return next(new ErrorResponse("bad_jwt_rt not found.", 404));
+		return next(new ErrorResponse("bad_jwt_Refresh token not found.", 404));
 	}
 	jwt.verify(
 		refreshToken,
@@ -21,7 +21,7 @@ const verifyJWT = (req, res, next) => {
 				return next(
 					new ErrorResponse(
 						`bad_jwt_REFRESH TOKEN ERROR: ${err?.message}`,
-						403,
+						406,
 					),
 				);
 			}
@@ -29,7 +29,7 @@ const verifyJWT = (req, res, next) => {
 			const user = await User.findOne({ _id: decodedRT.id });
 			if (!user) {
 				clearRefreshCookie(res);
-				return next(new ErrorResponse("bad_jwt_No user found.", 401));
+				return next(new ErrorResponse("bad_jwt_No user found.", 404));
 			}
 
 			if (user.currentRefreshSalt !== decodedRT.crs) {
@@ -45,17 +45,15 @@ const verifyJWT = (req, res, next) => {
 			const authHeader =
 				req.headers?.Authorization || req.headers?.authorization;
 			if (!authHeader?.startsWith("Bearer ")) {
-				clearRefreshCookie(res);
 				return next(
-					new ErrorResponse("bad_jwt_Unauthorized: Missing JWT header", 401),
+					new ErrorResponse("bad_jwt_Unauthorized: Missing JWT header", 403),
 				);
 			}
 
 			const accessToken = authHeader.split(" ")[1];
 			if (!accessToken) {
-				clearRefreshCookie(res);
 				return next(
-					new ErrorResponse("bad_jwt_Unauthorized: Missing access token", 401),
+					new ErrorResponse("bad_jwt_Unauthorized: Missing access token", 403),
 				);
 			}
 
@@ -79,7 +77,10 @@ const verifyJWT = (req, res, next) => {
 						return next(new ErrorResponse("bad_jwt_Bad Token(s).", 406));
 					}
 
-					if (!user._id.equals(decodedAT.id) || decodedAT.id !== decodedRT.id) {
+					if (
+						!user._id.equals(decodedAT.id) &&
+						!decodedAT.id.equals(decodedRT.id)
+					) {
 						clearRefreshCookie(res);
 						return next(new ErrorResponse("bad_jwt_Bad User.", 406));
 					}

@@ -5,12 +5,14 @@ const sendToken = async (res, user, statusCode) => {
 	res.cookie("tempestRefreshToken", refreshToken, {
 		httpOnly: true,
 		// secure: true, // https
+		// signed: true,
 		sameSite: "none",
 		maxAge: process.env.JWT_REFRESH_COOKIE_EXPIRE,
 	});
 	res.cookie("tempestUserEmail", user.email, {
 		httpOnly: true,
 		// secure: true, // https
+		// signed: true,
 		sameSite: "none",
 		maxAge: process.env.JWT_REFRESH_COOKIE_EXPIRE,
 	});
