@@ -18,7 +18,7 @@ const UserSchema = mongoose.Schema({
 		maxLength: [10, "Lastname cannot be larger than 10 characters."],
 		match: [/^[A-Za-z]{3,10}$/, "Lastname can only contain alphabets."],
 	},
-	avatarPath: String,
+	avatar: String,
 	username: {
 		type: String,
 		required: [true, "Username is required."],
@@ -80,26 +80,62 @@ const UserSchema = mongoose.Schema({
 		],
 	},
 	occupdation: String,
+	standing: {
+		type: String,
+		default: "respectable",
+	},
 	device: String,
 	ip: String,
 	accessLocation: String,
 	currentAccessSalt: {
 		type: Number,
 		default: 0,
+		select: false,
 	},
 	currentRefreshSalt: {
 		type: Number,
 		default: 0,
+		select: false,
 	},
-	followerTotal: Number,
-	followeeTotal: Number,
-	followers: [
-		{ type: mongoose.Schema.Types.ObjectId, ref: "Follower", select: false },
-	],
-	followees: [
-		{ type: mongoose.Schema.Types.ObjectId, ref: "Followee", select: false },
-	],
+	followerTotal: {
+		type: Number,
+		default: 0,
+	},
+	followingTotal: {
+		type: Number,
+		default: 0,
+	},
+	followers: {
+		type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+		select: false,
+	},
+	followings: {
+		type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+		select: false,
+	},
+	followingDates: {
+		type: [
+			{
+				_id: mongoose.Schema.Types.ObjectId,
+				followingFrom: Date,
+			},
+		],
+		select: false,
+	},
+	followerDates: {
+		type: [
+			{
+				_id: mongoose.Schema.Types.ObjectId,
+				followerFrom: Date,
+			},
+		],
+		select: false,
+	},
 	posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post", select: false }],
+	joinDate: {
+		type: Date,
+		default: new Date(),
+	},
 });
 // Here, we are using the function keyword because that will bind the this keyword to the new user object that it receives.
 UserSchema.pre("save", async function (next) {

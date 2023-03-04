@@ -13,6 +13,12 @@ const postSchema = mongoose.Schema({
 	postImagePath: String,
 	upvotes: String,
 	downvotes: String,
+	category: String,
+	tags: [
+		{
+			type: String,
+		},
+	],
 });
 
 const Post = mongoose.model("Post", postSchema);

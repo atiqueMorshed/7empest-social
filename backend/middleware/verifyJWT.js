@@ -6,10 +6,10 @@ import clearRefreshCookie from "../utils/clearRefreshCookie.js";
 
 const verifyJWT = (req, res, next) => {
 	const refreshToken = req.cookies?.tempestRefreshToken;
-	const userEmail = req.cookies?.tempestUserEmail;
+	// const userEmail = req.cookies?.tempestUserEmail;
+	const { currentUserEmail } = req.body;
 
 	if (!refreshToken) {
-		clearRefreshCookie(res);
 		return next(new ErrorResponse("bad_jwt_Refresh token not found.", 404));
 	}
 	jwt.verify(
@@ -37,10 +37,14 @@ const verifyJWT = (req, res, next) => {
 				return next(new ErrorResponse("bad_jwt_Bad Refresh Token.", 406));
 			}
 
-			if (user.email !== userEmail) {
+			if (user.email !== currentUserEmail) {
 				clearRefreshCookie(res);
 				return next(new ErrorResponse("bad_jwt_Unauthorized Email.", 401));
 			}
+			// if (user.email !== userEmail) {
+			// 	clearRefreshCookie(res);
+			// 	return next(new ErrorResponse("bad_jwt_Unauthorized Email.", 401));
+			// }
 
 			const authHeader =
 				req.headers?.Authorization || req.headers?.authorization;

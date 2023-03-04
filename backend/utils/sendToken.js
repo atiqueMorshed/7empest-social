@@ -17,7 +17,34 @@ const sendToken = async (res, user, statusCode) => {
 		maxAge: process.env.JWT_REFRESH_COOKIE_EXPIRE,
 	});
 
-	res.status(statusCode).json({ success: true, accessToken });
+	const {
+		firstname,
+		lastname,
+		username,
+		email,
+		isEmailVerified,
+		location,
+		followerTotal,
+		followeeTotal,
+		standing,
+		joinDate,
+	} = user;
+	res.status(statusCode).json({
+		success: true,
+		accessToken,
+		user: {
+			firstname,
+			lastname,
+			username,
+			email,
+			isEmailVerified,
+			location,
+			followerTotal,
+			followeeTotal,
+			standing,
+			joinDate,
+		},
+	});
 };
 
 export default sendToken;

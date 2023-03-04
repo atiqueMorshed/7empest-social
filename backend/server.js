@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
+import mongoose from "mongoose";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -13,6 +14,8 @@ import corsOptions from "./config/corsOptions.js";
 import errorHandler from "./middleware/errorHandler.js";
 import verifyJWT from "./middleware/verifyJWT.js";
 import authRoute from "./routes/auth.js";
+import postsRoute from "./routes/posts.js";
+import usersRoute from "./routes/users.js";
 // CONFIG
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,11 +42,14 @@ connectDB();
 
 const PORT = process.env.PORT || 4000;
 
+// Routes
 app.get("/", (req, res) => {
 	res.status(200).send("OK");
 });
 
+app.use("/api/users", usersRoute);
 app.use("/api/auth", authRoute);
+app.use("/api/posts", postsRoute);
 
 app.get("/secret", verifyJWT, (req, res) => {
 	res.status(200).json({ success: true, message: "VERY SECRET!" });
@@ -55,3 +61,12 @@ app.use(errorHandler);
 app.listen(PORT, () =>
 	console.log(`Server running on http://localhost:${PORT}`),
 );
+
+process.on("SIGINT", function () {
+	mongoose.connection.close(function () {
+		console.log(
+			"Mongoose default connection disconnected through app termination",
+		);
+		process.exit(0);
+	});
+});

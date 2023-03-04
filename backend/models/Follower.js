@@ -4,12 +4,17 @@ const followerSchema = mongoose.Schema({
 	_id: mongoose.Schema.Types.ObjectId,
 	userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 	username: String,
-	followeeFirstName: String,
-	followeeLastName: String,
-	followeeUsername: String,
-	followeeAvatarPath: String,
-	followeeStanding: String,
-	followDate: Date,
+	followerFirstName: String,
+	followerLastName: String,
+	followerUsername: String,
+	followerAvatarPath: String,
+	followerStanding: String,
+	followerLocation: String,
+	followerOccupation: String,
+	followDate: {
+		type: Date,
+		default: new Date(),
+	},
 });
 
 const Follower = mongoose.model("Follower", followerSchema);

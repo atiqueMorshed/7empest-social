@@ -15,11 +15,13 @@ export const register = asyncHandler(async (req, res, next) => {
 	const {
 		firstname,
 		lastname,
+		avatar,
 		username,
 		email,
 		password,
 		confirmPassword,
 		location,
+		occupation,
 	} = req.body;
 
 	if (
@@ -41,12 +43,14 @@ export const register = asyncHandler(async (req, res, next) => {
 	const user = await User.create({
 		firstname,
 		lastname,
+		avatar,
 		username,
 		email,
 		password,
 		location,
+		occupation,
 	});
-	await sendToken(res, user, 200);
+	await sendToken(res, user, 201);
 });
 
 // @access Public
@@ -58,13 +62,15 @@ export const login = asyncHandler(async (req, res, next) => {
 	if (!email || !password)
 		return next(new ErrorResponse("Email and password is required.", 400));
 
-	const user = await User.findOne({ email }).select("+password");
-	if (!user) return next(new ErrorResponse("No user found.", 401));
+	const user = await User.findOne({ email }).select(
+		"+password +currentAccessSalt +currentRefreshSalt",
+	);
+	if (!user) return next(new ErrorResponse("No user found.", 404));
 
 	const isMatch = await user.matchPasswords(password);
 	if (!isMatch) return next(new ErrorResponse("Invalid password.", 401));
 
-	await sendToken(res, user, 201);
+	await sendToken(res, user, 200);
 });
 
 // @access Public
