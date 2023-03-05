@@ -24,7 +24,7 @@ const UserSchema = mongoose.Schema({
 		required: [true, "Username is required."],
 		unique: [true, "Username already in use."],
 		minLength: [6, "Username must be atleast 6 characters."],
-		maxLength: [12, "Username cannot be larger than 6 characters."],
+		maxLength: [12, "Username cannot be larger than 12 characters."],
 		match: [
 			/^[A-Za-z0-9]{6,12}$/,
 			"Username can only contain alphabets and numbers.",

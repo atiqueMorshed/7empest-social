@@ -3,6 +3,7 @@ import uploadFile from "../config/multerDiskStorage.js";
 import {
 	forgotPassword,
 	login,
+	logout,
 	refresh,
 	register,
 	resetPassword,
@@ -11,6 +12,7 @@ import {
 const router = express.Router();
 
 router.route("/login").post(login);
+router.route("/logout").post(logout);
 router.route("/forgotpassword").post(forgotPassword);
 router.route("/resetpassword/:resetToken").put(resetPassword);
 router.route("/refresh/").get(refresh);

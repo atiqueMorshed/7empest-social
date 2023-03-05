@@ -1,14 +1,16 @@
 import express from "express";
 import {
 	addRemoveFollowers,
-	findFollowers,
-	findUser,
+	getFollowers,
+	getFollowings,
+	getUser,
 } from "../controllers/users.js";
 
 const router = express.Router();
 
-router.route("/findUser/:username").get(findUser);
-router.route("/findFollowers/:username").get(findFollowers);
-router.route("/addRemoveFollowers/:followingUsername").post(addRemoveFollowers);
+router.route("/:username").get(getUser);
+router.route("/:username/followers").get(getFollowers);
+router.route("/:username/followings").get(getFollowings);
+router.route("/:followingUsername/follow-unfollow").post(addRemoveFollowers);
 
 export default router;

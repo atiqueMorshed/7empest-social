@@ -26,7 +26,7 @@ const verifyJWT = (req, res, next) => {
 				);
 			}
 
-			const user = await User.findOne({ _id: decodedRT.id });
+			const user = await User.findById(decodedRT.id);
 			if (!user) {
 				clearRefreshCookie(res);
 				return next(new ErrorResponse("bad_jwt_No user found.", 404));

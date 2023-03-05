@@ -56,7 +56,7 @@ export const register = asyncHandler(async (req, res, next) => {
 // @access Public
 // @desc Login
 // @route /auth/login POST
-// @body email, password
+// @req.body email, password
 export const login = asyncHandler(async (req, res, next) => {
 	const { email, password } = req.body;
 	if (!email || !password)
@@ -76,8 +76,8 @@ export const login = asyncHandler(async (req, res, next) => {
 // @access Public
 // @desc Reset Password
 // @route /auth/resetpassword/:resetToken POST
-// @body password
-// @params resetToken
+// @req.body password
+// @req.params resetToken
 export const resetPassword = async (req, res, next) => {
 	const { resetToken } = req.params;
 	const { password } = req.body;
@@ -122,7 +122,7 @@ export const resetPassword = async (req, res, next) => {
 // @access Public
 // @desc Forgot Password
 // @route /auth/forgotpassword/ POST
-// @body email
+// @req.body email
 export const forgotPassword = async (req, res, next) => {
 	const { email } = req.body;
 
@@ -189,6 +189,7 @@ export const forgotPassword = async (req, res, next) => {
 // @access Public
 // @desc Refresh Access Token
 // @route /auth/refresh/ GET
+// @req.cookie refreshToken, userEmail
 export const refresh = (req, res, next) => {
 	const refreshToken = req.cookies?.tempestRefreshToken;
 	const userEmail = req.cookies?.tempestUserEmail;
@@ -231,6 +232,10 @@ export const refresh = (req, res, next) => {
 	);
 };
 
+// @access Public
+// @desc Logout User
+// @route /auth/logout/ POST
+// @req.cookie refreshToken
 export const logout = (req, res, next) => {
 	const refreshToken = req.cookies?.tempestRefreshToken;
 	if (!refreshToken)
@@ -244,7 +249,7 @@ export const logout = (req, res, next) => {
 		asyncHandler(async (err, decoded) => {
 			if (err)
 				return next(
-					new ErrorResponse(`REFRESH TOKEN ERROR: ${err?.message}`, 403),
+					new ErrorResponse(`REFRESH TOKEN ERROR: ${err?.message}`, 406),
 				);
 
 			const user = await User.findOne({ _id: decoded.id }).select(

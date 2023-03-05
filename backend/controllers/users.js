@@ -2,24 +2,50 @@ import expressAsyncHandler from "express-async-handler";
 import User from "../models/User.js";
 import ErrorResponse from "../utils/ErrorResponse.js";
 
-export const findUser = expressAsyncHandler(async (req, res, next) => {
+// @access Public
+// @desc Get a user
+// @route /api/users/:username GET
+// @req.params username
+export const getUser = expressAsyncHandler(async (req, res, next) => {
 	const { username } = req.params;
-
 	const user = await User.findOne({ username });
 	if (!user) return next(new ErrorResponse("No user found.", 404));
 
 	res.status(200).json({ success: true, user });
 });
 
-export const findFollowers = expressAsyncHandler(async (req, res, next) => {
+// @access Public
+// @desc Get Followers of specified user
+// @route /api/users/:username/followers GET
+// @req.params username
+export const getFollowers = expressAsyncHandler(async (req, res, next) => {
 	const { username } = req.params;
-
 	const user = await User.findOne({ username }).populate("followers");
 	if (!user) return next(new ErrorResponse("No user found.", 404));
 
 	res.status(200).json({ success: true, user });
 });
 
+// @access Public
+// @desc Get Followings of specified user
+// @route /api/users/:username/followings GET
+// @req.params username
+export const getFollowings = expressAsyncHandler(async (req, res, next) => {
+	const { username } = req.params;
+	const user = await User.findOne({ username }, "_id").populate(
+		"followings",
+		"followers",
+	);
+	if (!user) return next(new ErrorResponse("No user found.", 404));
+
+	res.status(200).json({ success: true, user });
+});
+
+// @access Public
+// @desc Add or remove follower
+// @route /api/users/:followingUsername/follow-unfollow POST
+// @req.user username
+// @req.params followingUsername
 export const addRemoveFollowers = expressAsyncHandler(
 	async (req, res, next) => {
 		const { username } = req.body;
