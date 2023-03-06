@@ -3,8 +3,10 @@ const contrastText = "#fff";
 
 export const DarkModePalette = {
 	background: {
-		default: "#030303",
+		offset1: grey[10],
+		offset2: "#262626",
 		paper: "#1a1a1b",
+		default: "#030303",
 	},
 	primary: {
 		lighter: blue[0],
@@ -72,9 +74,12 @@ export const DarkModePalette = {
 
 export const LightModePalette = {
 	background: {
+		offset1: "#EEEEEE",
+		offset2: "#E8E8E8",
 		default: "#fafafb",
-		// paper: "#f4f4f4",
 		paper: "#ffffff",
+
+		// paper: "#f4f4f4",
 	},
 	primary: {
 		lighter: blue[0],
