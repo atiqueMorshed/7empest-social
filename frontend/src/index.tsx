@@ -1,6 +1,10 @@
+import { CssBaseline } from "@mui/material";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import { store } from "./app/store";
 import "./index.css";
 
 const root = ReactDOM.createRoot(
@@ -8,6 +12,11 @@ const root = ReactDOM.createRoot(
 );
 root.render(
 	<React.StrictMode>
-		<App />
+		<BrowserRouter>
+			<Provider store={store}>
+				<CssBaseline />
+				<App />
+			</Provider>
+		</BrowserRouter>
 	</React.StrictMode>,
 );
