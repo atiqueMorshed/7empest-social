@@ -40,14 +40,19 @@ export const DarkModePalette = {
 
 	success: {
 		lighter: green[0],
+		100: green[1],
+		200: green[2],
 		light: green[3],
 		main: green[5],
+		500: green[6],
 		dark: green[7],
 		darker: green[9],
 		contrastText,
 	},
 	warning: {
 		lighter: gold[0],
+		100: gold[1],
+		200: gold[2],
 		light: gold[3],
 		main: gold[5],
 		dark: gold[7],
@@ -56,6 +61,8 @@ export const DarkModePalette = {
 	},
 	error: {
 		lighter: red[0],
+		100: red[1],
+		200: red[2],
 		light: red[2],
 		main: red[4],
 		dark: red[7],
@@ -64,6 +71,8 @@ export const DarkModePalette = {
 	},
 	info: {
 		lighter: cyan[0],
+		100: cyan[1],
+		200: cyan[2],
 		light: cyan[3],
 		main: cyan[5],
 		dark: cyan[7],
@@ -110,17 +119,21 @@ export const LightModePalette = {
 		A300: grey[14],
 		contrastText: grey[0],
 	},
-
 	success: {
 		lighter: green[0],
+		100: green[1],
+		200: green[2],
 		light: green[3],
 		main: green[5],
+		500: green[6],
 		dark: green[7],
 		darker: green[9],
 		contrastText,
 	},
 	warning: {
 		lighter: gold[0],
+		100: gold[1],
+		200: gold[2],
 		light: gold[3],
 		main: gold[5],
 		dark: gold[7],
@@ -129,6 +142,8 @@ export const LightModePalette = {
 	},
 	error: {
 		lighter: red[0],
+		100: red[1],
+		200: red[2],
 		light: red[2],
 		main: red[4],
 		dark: red[7],
@@ -137,6 +152,8 @@ export const LightModePalette = {
 	},
 	info: {
 		lighter: cyan[0],
+		100: cyan[1],
+		200: cyan[2],
 		light: cyan[3],
 		main: cyan[5],
 		dark: cyan[7],
