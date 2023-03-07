@@ -1,6 +1,7 @@
 import {
 	DarkMode,
 	LightMode,
+	Login,
 	Notifications,
 	Search,
 } from "@mui/icons-material";
@@ -22,7 +23,7 @@ import NotificationMenu from "./NotificationMenu";
 import UserMenu from "./UserMenu";
 
 // const pages = ["Products", "Pricing", "Blog"];
-
+const isLoggedIn = false;
 function Navbar() {
 	const mode = useAppSelector(selectThemeMode);
 	const dispatch = useAppDispatch();
@@ -85,7 +86,7 @@ function Navbar() {
 									display: "flex",
 									fontWeight: 900,
 									letterSpacing: ".16rem",
-									color: "inherit",
+									color: "primary.light",
 									textDecoration: "none",
 								}}
 							>
@@ -134,112 +135,186 @@ function Navbar() {
 									backgroundColor: "background.offset2",
 									p: 1,
 									borderRadius: 1,
-									mr: { xs: 1, sm: 2 },
+									mr: { xs: 1 },
 								}}
 							>
-								{mode === "light" ? <DarkMode /> : <LightMode />}
+								{mode === "light" ? (
+									<DarkMode
+										sx={{
+											height: { xs: "18px", sm: "24px" },
+											width: { xs: "18px", sm: "24px" },
+										}}
+									/>
+								) : (
+									<LightMode
+										sx={{
+											height: { xs: "18px", sm: "24px" },
+											width: { xs: "18px", sm: "24px" },
+										}}
+									/>
+								)}
 							</IconButton>
 						</Tooltip>
 
-						{/* Notification Menu Icon */}
-						<Tooltip title="Recent Notifications">
-							<IconButton
-								size="small"
-								aria-label="Notifications menu Items"
-								aria-controls="menu-appbar-notification"
-								aria-haspopup="true"
-								onClick={handleOpenNotificationMenu}
-								color="inherit"
-								sx={{
-									color: "text.primary",
-									backgroundColor: "background.offset2",
-									p: 1,
-									mr: { xs: 0, sm: 1 },
-									borderRadius: 1,
-								}}
-							>
-								<Notifications />
-							</IconButton>
-						</Tooltip>
+						{isLoggedIn && (
+							<>
+								{/* Notification Menu Icon */}
+								<Tooltip title="Recent Notifications">
+									<IconButton
+										size="small"
+										aria-label="Notifications menu Items"
+										aria-controls="menu-appbar-notification"
+										aria-haspopup="true"
+										onClick={handleOpenNotificationMenu}
+										color="inherit"
+										sx={{
+											color: "text.primary",
+											backgroundColor: "background.offset2",
+											p: 1,
+											mr: 1,
+											borderRadius: 1,
+										}}
+									>
+										<Notifications
+											sx={{
+												height: { xs: "18px", sm: "24px" },
+												width: { xs: "18px", sm: "24px" },
+											}}
+										/>
+									</IconButton>
+								</Tooltip>
 
-						{/* Mobile Search Menu Icon */}
-						<Tooltip title="Search for people">
-							<IconButton
-								size="small"
-								aria-label="Navbar menu Items"
-								aria-controls="menu-appbar-nav"
-								aria-haspopup="true"
-								onClick={handleOpenNavMenu}
-								color="inherit"
-								sx={{
-									display: {
-										xs: "flex",
-										md: "none",
-									},
-									color: "text.primary",
-									backgroundColor: "background.offset2",
-									p: 1,
-									mr: { xs: 0, sm: 1 },
-									borderRadius: 1,
-								}}
-							>
-								<Search />
-							</IconButton>
-						</Tooltip>
+								{/* Mobile Search Menu Icon */}
+								<Tooltip title="Search for people">
+									<IconButton
+										size="small"
+										aria-label="Navbar menu Items"
+										aria-controls="menu-appbar-nav"
+										aria-haspopup="true"
+										onClick={handleOpenNavMenu}
+										color="inherit"
+										sx={{
+											display: {
+												xs: "flex",
+												md: "none",
+											},
+											color: "text.primary",
+											backgroundColor: "background.offset2",
+											p: 1,
+											mr: { xs: 0, sm: 1 },
+											borderRadius: 1,
+										}}
+									>
+										<Search
+											sx={{
+												height: { xs: "18px", sm: "24px" },
+												width: { xs: "18px", sm: "24px" },
+											}}
+										/>
+									</IconButton>
+								</Tooltip>
+							</>
+						)}
 
 						{/* User Options Menu Icon */}
-						<Tooltip title="View User Options">
-							<IconButton
-								aria-label="Navbar User Options"
-								aria-controls="menu-appbar-user"
-								aria-haspopup="true"
-								onClick={handleOpenUserMenu}
-								sx={{ py: 0.5, px: 1, borderRadius: 1 }}
-							>
-								<Stack direction="row" spacing={1} alignItems="center">
-									{/* <Avatar
+						{!isLoggedIn ? (
+							<Tooltip title="Sign In">
+								<Link
+									component={RouterLink}
+									to="/"
+									sx={{ textDecoration: "none" }}
+								>
+									<IconButton
+										sx={{
+											color: "text.primary",
+											backgroundColor: "background.offset2",
+											p: 1,
+											borderRadius: 1,
+											ml: 1,
+										}}
+									>
+										<Stack direction="row" spacing={1} alignItems="center">
+											<Login
+												sx={{
+													height: { xs: "18px", sm: "24px" },
+													width: { xs: "18px", sm: "24px" },
+												}}
+											/>
+
+											<Typography
+												variant="h6"
+												sx={{
+													display: { xs: "none", md: "flex" },
+													color: "text.primary",
+													textDecoration: "none",
+												}}
+											>
+												Login
+											</Typography>
+										</Stack>
+									</IconButton>
+								</Link>
+							</Tooltip>
+						) : (
+							<>
+								<Tooltip title="View User Options">
+									<IconButton
+										aria-label="Navbar User Options"
+										aria-controls="menu-appbar-user"
+										aria-haspopup="true"
+										onClick={handleOpenUserMenu}
+										sx={{ py: 0.5, px: 1, borderRadius: 1 }}
+									>
+										<Stack direction="row" spacing={1} alignItems="center">
+											{/* <Avatar
 										alt="Full Name"
 										sx={{ width: 30, height: 30 }}
 										src="/static/images/avatar/2.jpg"
 									/> */}
-									<Avatar
-										alt="Full Name"
-										sx={{
-											width: { xs: 36, md: 32 },
-											height: { xs: 36, md: 32 },
-										}}
-									/>
-									<Typography
-										variant="h6"
-										sx={{
-											display: { xs: "none", md: "flex" },
-											color: "text.primary",
-											textDecoration: "none",
-										}}
-									>
-										Full Name
-									</Typography>
-								</Stack>
-							</IconButton>
-						</Tooltip>
+											<Avatar
+												alt="Full Name"
+												sx={{
+													height: { xs: "28px", sm: "34px" },
+													width: { xs: "28px", sm: "34px" },
+												}}
+											/>
+											<Typography
+												variant="h6"
+												sx={{
+													display: { xs: "none", md: "flex" },
+													color: "text.primary",
+													textDecoration: "none",
+												}}
+											>
+												Full Name
+											</Typography>
+										</Stack>
+									</IconButton>
+								</Tooltip>
+							</>
+						)}
 
 						{/* Notification Menu Dropdown */}
-						<NotificationMenu
-							anchorElNotification={anchorElNotification}
-							handleCloseNotificationMenu={handleCloseNotificationMenu}
-						/>
+						{isLoggedIn && (
+							<NotificationMenu
+								anchorElNotification={anchorElNotification}
+								handleCloseNotificationMenu={handleCloseNotificationMenu}
+							/>
+						)}
 						{/* Search Menu Dropdown */}
-						{isBelowMd && (
+						{isLoggedIn && isBelowMd && (
 							<NavMobileMenu
 								anchorElNav={anchorElNav}
 								handleCloseNavMenu={handleCloseNavMenu}
 							/>
 						)}
 						{/* User Menu Dropdown */}
-						<UserMenu
-							anchorElUser={anchorElUser}
-							handleCloseUserMenu={handleCloseUserMenu}
-						/>
+						{isLoggedIn && (
+							<UserMenu
+								anchorElUser={anchorElUser}
+								handleCloseUserMenu={handleCloseUserMenu}
+							/>
+						)}
 					</Stack>
 				</Toolbar>
 			</Container>

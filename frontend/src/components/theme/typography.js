@@ -1,5 +1,5 @@
 const typography = {
-	fontFamily: "'Inter', sans-serif",
+	fontFamily: ["Inter", "sans-serif"].join(","),
 	fontSize: 14,
 	fontWeightLight: 300,
 	fontWeightRegular: 400,
