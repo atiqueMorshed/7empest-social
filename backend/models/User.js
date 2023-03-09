@@ -45,30 +45,7 @@ const UserSchema = mongoose.Schema({
 		minLength: [6, "Password must be atleast 6 characters."],
 		select: false,
 	},
-	isEmailVerified: {
-		type: Boolean,
-		default: false,
-	},
-	emailVerificationToken: {
-		verificationToken: {
-			type: String,
-			select: false,
-		},
-		expiryDate: {
-			type: Date,
-			select: false,
-		},
-	},
-	resetPasswordToken: {
-		resetToken: {
-			type: Date,
-			select: false,
-		},
-		expiryDate: {
-			type: Date,
-			select: false,
-		},
-	},
+
 	location: {
 		type: String,
 		required: [true, "Location is required"],
@@ -79,24 +56,35 @@ const UserSchema = mongoose.Schema({
 			"Location can only contain alphabets, numbers, whitespace, dash, dot, comma",
 		],
 	},
-	occupdation: String,
+	occupation: {
+		type: String,
+		required: [true, "Occupation is required"],
+		minLength: [3, "Occupation must be of atleast 3 characters."],
+		maxLength: [20, "Occupation cannot be larger than 20 characters."],
+		match: [
+			/^[A-Za-z0-9,.\- ]{2,20}$/,
+			"Occupation can only contain alphabets, numbers, whitespace, dash, dot, comma",
+		],
+	},
 	standing: {
 		type: String,
 		default: "respectable",
 	},
-	device: String,
+	device: {
+		type: String,
+		select: false,
+	},
 	ip: String,
-	accessLocation: String,
-	currentAccessSalt: {
+	accessLocation: {
+		type: String,
+		select: false,
+	},
+	currentSalt: {
 		type: Number,
 		default: 0,
 		select: false,
 	},
-	currentRefreshSalt: {
-		type: Number,
-		default: 0,
-		select: false,
-	},
+
 	followerTotal: {
 		type: Number,
 		default: 0,
@@ -136,8 +124,32 @@ const UserSchema = mongoose.Schema({
 		type: Date,
 		default: new Date(),
 	},
+	isEmailVerified: {
+		type: Boolean,
+		default: false,
+	},
+	emailVerificationToken: {
+		verificationToken: {
+			type: String,
+			select: false,
+		},
+		expiryDate: {
+			type: Date,
+			select: false,
+		},
+	},
+	resetPasswordToken: {
+		resetToken: {
+			type: Date,
+			select: false,
+		},
+		expiryDate: {
+			type: Date,
+			select: false,
+		},
+	},
 });
-// Here, we are using the function keyword because that will bind the this keyword to the new user object that it receives.
+// @desc automatically salts our passwords before save (and if they are modified or new);
 UserSchema.pre("save", async function (next) {
 	if (!this.isModified("password")) {
 		next();
@@ -151,31 +163,18 @@ UserSchema.methods.matchPasswords = async function (password) {
 	return await bcrypt.compare(password, this.password);
 };
 
-UserSchema.methods.getSignedJWTAccessToken = function () {
-	const newCAS = (this.currentAccessSalt + 1) % 100;
-	this.currentAccessSalt = newCAS;
-	return jwt.sign(
-		{ id: this._id, cas: newCAS, crs: this.currentRefreshSalt },
-		process.env.JWT_ACCESS_SECRET,
-		{
-			expiresIn: process.env.JWT_ACCESS_EXPIRE,
-		},
-	);
-};
-
-UserSchema.methods.getSignedJWTRefreshToken = function () {
-	this.currentRefreshSalt = (this.currentRefreshSalt + 1) % 1000;
+UserSchema.methods.getSignedJWTTokens = function () {
+	this.currentSalt = (this.currentSalt + 1) % 100;
 	const refreshToken = jwt.sign(
-		{ id: this._id, crs: this.currentRefreshSalt },
+		{ id: this._id, cs: this.currentSalt },
 		process.env.JWT_REFRESH_SECRET,
 		{
 			expiresIn: process.env.JWT_REFRESH_EXPIRE,
 		},
 	);
 
-	this.currentAccessSalt = (this.currentAccessSalt + 1) % 100;
 	const accessToken = jwt.sign(
-		{ id: this._id, cas: this.currentAccessSalt, crs: this.currentRefreshSalt },
+		{ id: this._id, cs: this.currentSalt },
 		process.env.JWT_ACCESS_SECRET,
 		{
 			expiresIn: process.env.JWT_ACCESS_EXPIRE,
@@ -185,9 +184,8 @@ UserSchema.methods.getSignedJWTRefreshToken = function () {
 	return { accessToken, refreshToken };
 };
 
-UserSchema.methods.changeCurrentJWTSalts = function (cas, crs) {
-	this.currentAccessSalt = cas + 1;
-	this.currentRefreshSalt = crs + 1;
+UserSchema.methods.changeCurrentJWTSalt = function (cs) {
+	this.currentSalt = cs + 1;
 	return true;
 };
 

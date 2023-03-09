@@ -7,21 +7,25 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
-import { Form, Formik, FormikHelpers } from "formik";
-import * as yup from "yup";
-const LoginPage = () => {
-	const loginSchema = yup.object().shape({
-		email: yup
-			.string()
-			.email("Enter a valid email.")
-			.required("Email is required."),
-		password: yup
-			.string()
-			.min(6, "Password must be atleast 6 characters.")
-			.required("Password is required."),
-	});
+import { Form, Formik } from "formik";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppSelector } from "../../app/hooks";
+import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
+import { useLoginMutation } from "../../features/auth/authApi";
+import { selectIsUserLoggedIn } from "../../features/auth/authSlice";
+import { getErrorMessage } from "../../utils/getErrorMessage";
+import { LoginType, loginSchema } from "./login.types";
 
-	type LoginType = yup.InferType<typeof loginSchema>;
+const LoginPage = () => {
+	const navigate = useNavigate();
+	const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
+	const [login, { isError, error, isLoading }] = useLoginMutation();
+
+	// Checks if user already logged in.
+	useEffect(() => {
+		if (isUserLoggedIn) navigate("/home");
+	}, [isUserLoggedIn, navigate]);
 
 	const initialValues = {
 		email: "",
@@ -30,9 +34,9 @@ const LoginPage = () => {
 
 	const handleSubmit = async (
 		values: LoginType,
-		{ setSubmitting, resetForm }: FormikHelpers<LoginType>,
+		// { setSubmitting, resetForm }: FormikHelpers<LoginType>,
 	) => {
-		console.log(values);
+		login(values);
 	};
 
 	return (
@@ -78,7 +82,7 @@ const LoginPage = () => {
 						touched,
 						handleChange,
 						handleBlur,
-						isSubmitting,
+						// isSubmitting,
 					}) => (
 						<Form noValidate>
 							<Grid container rowGap={4}>
@@ -118,7 +122,7 @@ const LoginPage = () => {
 								<Grid item xs={12}>
 									<Button
 										type="submit"
-										disabled={isSubmitting}
+										disabled={isLoading}
 										color="primary"
 										variant="contained"
 										endIcon={<SendIcon />}
@@ -127,6 +131,14 @@ const LoginPage = () => {
 									>
 										Submit
 									</Button>
+									{isError && (
+										<ErrorMessage
+											message={
+												getErrorMessage(error) ||
+												"There was an error logging in."
+											}
+										/>
+									)}
 								</Grid>
 							</Grid>
 						</Form>

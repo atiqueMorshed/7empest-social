@@ -1,11 +1,5 @@
-const clearRefreshCookie = (res) => {
-	res.clearCookie("tempestRefreshToken", {
-		httpOnly: true,
-		// signed: true,
-		// secure: true, // https
-		sameSite: "none",
-	});
-	res.clearCookie("tempestUserEmail", {
+const clearAccessCookie = (res) => {
+	res.clearCookie("tempestAccessToken", {
 		httpOnly: true,
 		// signed: true,
 		// secure: true, // https
@@ -13,4 +7,4 @@ const clearRefreshCookie = (res) => {
 	});
 };
 
-export default clearRefreshCookie;
+export default clearAccessCookie;

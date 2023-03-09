@@ -1,5 +1,8 @@
 import { Logout, PersonAdd, Settings } from "@mui/icons-material";
 import { Avatar, Divider, ListItemIcon, Menu, MenuItem } from "@mui/material";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useLogoutMutation } from "../../features/auth/authApi";
 
 type iProps = {
 	anchorElUser: null | HTMLElement;
@@ -7,6 +10,19 @@ type iProps = {
 };
 
 const UserMenu = ({ anchorElUser, handleCloseUserMenu }: iProps) => {
+	const navigate = useNavigate();
+
+	const [logout, { isError, isSuccess }] = useLogoutMutation();
+
+	useEffect(() => {
+		if (isSuccess || isError) navigate("/");
+	}, [isSuccess, isError]);
+
+	const handleLogout = () => {
+		handleCloseUserMenu();
+		logout();
+	};
+
 	return (
 		<Menu
 			id="menu-appbar-user"
@@ -43,7 +59,7 @@ const UserMenu = ({ anchorElUser, handleCloseUserMenu }: iProps) => {
 				</ListItemIcon>
 				Settings
 			</MenuItem>
-			<MenuItem>
+			<MenuItem onClick={handleLogout}>
 				<ListItemIcon>
 					<Logout fontSize="small" />
 				</ListItemIcon>

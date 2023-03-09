@@ -15,19 +15,32 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import {
+	selectAuthUser,
+	selectIsUserLoggedIn,
+} from "../../features/auth/authSlice";
 import { selectThemeMode, setMode } from "../../features/theme/themeSlice";
 import NavMobileMenu from "./NavMobileMenu";
 import NotificationMenu from "./NotificationMenu";
 import UserMenu from "./UserMenu";
 
 // const pages = ["Products", "Pricing", "Blog"];
-const isLoggedIn = false;
 function Navbar() {
+	const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
 	const mode = useAppSelector(selectThemeMode);
+	const authUser = useAppSelector(selectAuthUser);
+	const navigate = useNavigate();
+
 	const dispatch = useAppDispatch();
+
 	const theme = useTheme();
+
+	React.useEffect(() => {
+		if (!isUserLoggedIn) navigate("/");
+	}, [isUserLoggedIn, navigate]);
+
 	const isBelowMd = useMediaQuery(theme.breakpoints.down("md"));
 
 	const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
@@ -156,7 +169,7 @@ function Navbar() {
 							</IconButton>
 						</Tooltip>
 
-						{isLoggedIn && (
+						{isUserLoggedIn && (
 							<>
 								{/* Notification Menu Icon */}
 								<Tooltip title="Recent Notifications">
@@ -217,7 +230,7 @@ function Navbar() {
 						)}
 
 						{/* User Options Menu Icon */}
-						{!isLoggedIn ? (
+						{!isUserLoggedIn ? (
 							<Tooltip title="Sign In">
 								<Link
 									component={RouterLink}
@@ -286,7 +299,7 @@ function Navbar() {
 													textDecoration: "none",
 												}}
 											>
-												Full Name
+												{authUser?.firstname || "Profile"}
 											</Typography>
 										</Stack>
 									</IconButton>
@@ -295,21 +308,21 @@ function Navbar() {
 						)}
 
 						{/* Notification Menu Dropdown */}
-						{isLoggedIn && (
+						{isUserLoggedIn && (
 							<NotificationMenu
 								anchorElNotification={anchorElNotification}
 								handleCloseNotificationMenu={handleCloseNotificationMenu}
 							/>
 						)}
 						{/* Search Menu Dropdown */}
-						{isLoggedIn && isBelowMd && (
+						{isUserLoggedIn && isBelowMd && (
 							<NavMobileMenu
 								anchorElNav={anchorElNav}
 								handleCloseNavMenu={handleCloseNavMenu}
 							/>
 						)}
 						{/* User Menu Dropdown */}
-						{isLoggedIn && (
+						{isUserLoggedIn && (
 							<UserMenu
 								anchorElUser={anchorElUser}
 								handleCloseUserMenu={handleCloseUserMenu}

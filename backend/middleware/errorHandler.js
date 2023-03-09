@@ -14,10 +14,9 @@ const errorHandler = (err, req, res, next) => {
 		error = new ErrorResponse(messages, 400);
 	}
 
-	res.status(error.statusCode || 500).json({
-		success: false,
-		error: error?.message || "Internal Server Error (ZZ).",
-	});
+	res
+		.status(error.statusCode || 500)
+		.json(error?.message || "Internal Server Error (ZZ).");
 };
 
 export default errorHandler;

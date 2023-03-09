@@ -31,7 +31,8 @@ export const register = asyncHandler(async (req, res, next) => {
 		!email ||
 		!password ||
 		!confirmPassword ||
-		!location
+		!location ||
+		!occupation
 	)
 		return next(new ErrorResponse("Please fill in the required fields.", 400));
 
@@ -50,6 +51,7 @@ export const register = asyncHandler(async (req, res, next) => {
 		location,
 		occupation,
 	});
+	console.log(user);
 	await sendToken(res, user, 201);
 });
 
@@ -62,9 +64,8 @@ export const login = asyncHandler(async (req, res, next) => {
 	if (!email || !password)
 		return next(new ErrorResponse("Email and password is required.", 400));
 
-	const user = await User.findOne({ email }).select(
-		"+password +currentAccessSalt +currentRefreshSalt",
-	);
+	const user = await User.findOne({ email }).select("password currentSalt");
+
 	if (!user) return next(new ErrorResponse("No user found.", 404));
 
 	const isMatch = await user.matchPasswords(password);
@@ -96,7 +97,7 @@ export const resetPassword = async (req, res, next) => {
 
 	const user = await User.findOne({
 		"resetPasswordToken.resetToken": resetTokenHashed,
-	}).select("+password");
+	}).select("password resetPasswordToken.expiryDate");
 
 	if (!user) {
 		return next(
@@ -190,84 +191,81 @@ export const forgotPassword = async (req, res, next) => {
 // @desc Refresh Access Token
 // @route /auth/refresh/ GET
 // @req.cookie refreshToken, userEmail
-export const refresh = (req, res, next) => {
+export const refresh = asyncHandler(async (req, res, next) => {
 	const refreshToken = req.cookies?.tempestRefreshToken;
-	const userEmail = req.cookies?.tempestUserEmail;
 
 	if (!refreshToken) return next(new ErrorResponse("Not authorized.", 401));
-	if (!userEmail) return next(new ErrorResponse("Not authorized.", 401));
 
-	jwt.verify(
+	const refreshPayload = jwt.verify(
 		refreshToken,
 		process.env.JWT_REFRESH_SECRET,
-		asyncHandler(async (err, decoded) => {
-			if (err) {
-				clearRefreshCookie(res);
-				return next(
-					new ErrorResponse(`REFRESH TOKEN ERROR: ${err?.message}`, 403),
-				);
-			}
-
-			const user = await User.findOne({ _id: decoded.id });
-			if (!user) {
-				clearRefreshCookie(res);
-				return next(new ErrorResponse("No user found.", 401));
-			}
-
-			if (user.currentRefreshSalt !== decoded.crs) {
-				clearRefreshCookie(res);
-				return next(new ErrorResponse("Bad Refresh Token.", 406));
-			}
-
-			if (user.email !== userEmail) {
-				clearRefreshCookie(res);
-				return next(new ErrorResponse("Unauthorized Email.", 401));
-			}
-
-			const accessToken = user.getSignedJWTAccessToken();
-			await user.save();
-
-			res.status(200).json({ success: true, accessToken });
-		}),
 	);
-};
+	if (!refreshPayload?.id)
+		return next(new ErrorResponse("Not authorized.", 401));
+
+	const authHeader = req.headers?.Authorization || req.headers?.authorization;
+	if (!authHeader?.startsWith("Bearer ")) {
+		return next(new ErrorResponse("Not authorized.", 401));
+	}
+
+	const accessToken = authHeader.split(" ")[1];
+	if (!accessToken) {
+		return next(new ErrorResponse("Not authorized.", 401));
+	}
+
+	const accessPayload = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET, {
+		ignoreExpiration: true,
+	});
+
+	if (!accessPayload?.id)
+		return next(new ErrorResponse("Not authorized.", 401));
+	if (
+		accessPayload.id !== refreshPayload.id ||
+		accessPayload.cs !== refreshPayload.cs
+	)
+		return next(new ErrorResponse("Not authorized.", 401));
+
+	const user = await User.findById(
+		refreshPayload.id,
+		"refreshToken currentSalt",
+	);
+
+	if (!user) return next(new ErrorResponse("No user found.", 404));
+
+	if (refreshPayload?.cs !== user.currentSalt)
+		return next(new ErrorResponse("Not authorized.", 401));
+
+	await sendToken(res, user, 200);
+});
 
 // @access Public
 // @desc Logout User
 // @route /auth/logout/ POST
 // @req.cookie refreshToken
-export const logout = (req, res, next) => {
+export const logout = asyncHandler(async (req, res) => {
 	const refreshToken = req.cookies?.tempestRefreshToken;
 	if (!refreshToken)
-		return res.status(204).json({ success: true, message: "Logged out." });
+		return res.status(200).json({ success: true, message: "Logged out." });
 
 	clearRefreshCookie(res);
 
-	jwt.verify(
+	const refreshPayload = jwt.verify(
 		refreshToken,
 		process.env.JWT_REFRESH_SECRET,
-		asyncHandler(async (err, decoded) => {
-			if (err)
-				return next(
-					new ErrorResponse(`REFRESH TOKEN ERROR: ${err?.message}`, 406),
-				);
-
-			const user = await User.findOne({ _id: decoded.id }).select(
-				"currentAccessSalt",
-				"currentRefreshSalt",
-			);
-			if (!user) return next(new ErrorResponse("No user found.", 401));
-
-			user.changeCurrentJWTSalts(
-				user.currentAccessSalt,
-				user.currentRefreshSalt,
-			);
-			await user.save();
-
-			res
-				.status(200)
-				.json({ success: true, message: "Logged out successfully!" });
-		}),
+		{
+			ignoreExpiration: true,
+		},
 	);
-	res.status(204).json({ success: true, message: "Logged out." });
-};
+
+	if (refreshPayload?.id) {
+		const user = await User.findById(refreshPayload.id, "currentSalt");
+		if (user) {
+			user.getSignedJWTTokens();
+			await user.save();
+		}
+	}
+
+	return res
+		.status(200)
+		.json({ success: true, message: "Logged out successfully!" });
+});
