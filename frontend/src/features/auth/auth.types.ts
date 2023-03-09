@@ -18,7 +18,6 @@ export const authUserSchema = yup.object({
 export const authSchema = yup.object({
 	accessToken: yup.string().optional(),
 	success: yup.boolean().optional(),
-	user: authUserSchema.optional(),
 });
 
 export const successMessageSchema = yup.object({

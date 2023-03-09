@@ -5,7 +5,6 @@ import { AuthType } from "./auth.types";
 const initialState: AuthType = {
 	accessToken: undefined,
 	success: false,
-	user: undefined,
 };
 
 const authSlice = createSlice({
@@ -13,15 +12,18 @@ const authSlice = createSlice({
 	initialState,
 	reducers: {
 		setCredentials: (state, action) => {
-			const { accessToken, user } = action.payload;
+			const { accessToken } = action.payload;
+
 			state.accessToken = accessToken;
 			state.success = true;
-			state.user = user;
+
+			localStorage.setItem("7empest-social-at", accessToken);
 		},
 		removeCredentials: (state) => {
 			state.accessToken = undefined;
-			state.user = undefined;
 			state.success = false;
+
+			localStorage?.removeItem("7empest-social-at");
 		},
 	},
 });
@@ -31,5 +33,4 @@ export const { setCredentials, removeCredentials } = authSlice.actions;
 export default authSlice.reducer;
 
 export const selectAccessToken = (state: RootState) => state.auth.accessToken;
-export const selectAuthUser = (state: RootState) => state.auth.user;
 export const selectIsUserLoggedIn = (state: RootState) => state.auth.success;

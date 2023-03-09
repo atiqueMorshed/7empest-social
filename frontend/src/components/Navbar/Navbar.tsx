@@ -15,12 +15,9 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import {
-	selectAuthUser,
-	selectIsUserLoggedIn,
-} from "../../features/auth/authSlice";
+import { selectIsUserLoggedIn } from "../../features/auth/authSlice";
 import { selectThemeMode, setMode } from "../../features/theme/themeSlice";
 import NavMobileMenu from "./NavMobileMenu";
 import NotificationMenu from "./NotificationMenu";
@@ -30,16 +27,10 @@ import UserMenu from "./UserMenu";
 function Navbar() {
 	const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
 	const mode = useAppSelector(selectThemeMode);
-	const authUser = useAppSelector(selectAuthUser);
-	const navigate = useNavigate();
 
 	const dispatch = useAppDispatch();
 
 	const theme = useTheme();
-
-	React.useEffect(() => {
-		if (!isUserLoggedIn) navigate("/");
-	}, [isUserLoggedIn, navigate]);
 
 	const isBelowMd = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -299,7 +290,7 @@ function Navbar() {
 													textDecoration: "none",
 												}}
 											>
-												{authUser?.firstname || "Profile"}
+												{"Profile"}
 											</Typography>
 										</Stack>
 									</IconButton>

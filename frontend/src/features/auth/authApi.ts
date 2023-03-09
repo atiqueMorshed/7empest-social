@@ -1,5 +1,5 @@
 import apiSlice from "../api/apiSlice";
-import { SuccessMessageType } from "./auth.types";
+import { AuthType, SuccessMessageType } from "./auth.types";
 import { removeCredentials, setCredentials } from "./authSlice";
 
 const authApi = apiSlice.injectEndpoints({
@@ -32,12 +32,27 @@ const authApi = apiSlice.injectEndpoints({
 			}),
 			async onQueryStarted(args, { dispatch, queryFulfilled }) {
 				try {
-					const result = await queryFulfilled;
-					console.log(result);
+					await queryFulfilled;
 					dispatch(removeCredentials());
-					dispatch(apiSlice.util.resetApiState());
+					setTimeout(() => dispatch(apiSlice.util.resetApiState()), 1000);
 				} catch (error) {
-					console.log(error);
+					dispatch(removeCredentials());
+					setTimeout(() => dispatch(apiSlice.util.resetApiState()), 1000);
+				}
+			},
+		}),
+
+		refresh: builder.query<AuthType, void>({
+			query: () => ({
+				url: "/auth/refresh",
+				method: "GET",
+			}),
+			async onQueryStarted(args, { dispatch, queryFulfilled }) {
+				try {
+					const result = await queryFulfilled;
+					dispatch(setCredentials(result?.data?.accessToken));
+				} catch (error) {
+					dispatch(removeCredentials());
 				}
 			},
 		}),

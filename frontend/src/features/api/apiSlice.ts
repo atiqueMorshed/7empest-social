@@ -6,8 +6,10 @@ const baseQuery = fetchBaseQuery({
 	baseUrl: process.env.REACT_APP_BACKEND,
 	credentials: "include",
 	prepareHeaders: (headers, { getState }) => {
-		const token = (getState() as RootState)?.auth?.accessToken;
-		// console.log(token);
+		const token =
+			(getState() as RootState)?.auth?.accessToken ||
+			localStorage.getItem("7empest-social-at");
+
 		if (token) {
 			headers.set("Authorization", `Bearer ${token}`);
 		}
@@ -27,11 +29,7 @@ const apiSlice = createApi({
 		if (result?.error?.status === 403) {
 			console.log("Refreshing Token.");
 			// Gets new access token from refresh token
-			const refreshResult = await baseQuery(
-				"/api/auth/refresh",
-				api,
-				extraOptions,
-			);
+			const refreshResult = await baseQuery("/auth/refresh", api, extraOptions);
 			// console.log(refreshResult);
 			// Saves new accessToken to memory
 			if (refreshResult?.data) {

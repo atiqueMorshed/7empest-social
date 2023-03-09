@@ -4,94 +4,95 @@ import User from "../models/User.js";
 import ErrorResponse from "../utils/ErrorResponse.js";
 import clearRefreshCookie from "../utils/clearRefreshCookie.js";
 
-const verifyJWT = (req, res, next) => {
+const verifyJWT = async (req, res, next) => {
+	console.log("-> verifyJWT");
 	const refreshToken = req.cookies?.tempestRefreshToken;
-	// const userEmail = req.cookies?.tempestUserEmail;
-	const { currentUserEmail } = req.body;
 
 	if (!refreshToken) {
-		return next(new ErrorResponse("bad_jwt_Refresh token not found.", 404));
+		return next(new ErrorResponse("Auth Error: (No RT).", 404));
 	}
 	jwt.verify(
 		refreshToken,
 		process.env.JWT_REFRESH_SECRET,
-		asyncHandler(async (err, decodedRT) => {
+		asyncHandler(async (err, refreshPayload) => {
 			if (err) {
 				clearRefreshCookie(res);
-				return next(
-					new ErrorResponse(
-						`bad_jwt_REFRESH TOKEN ERROR: ${err?.message}`,
-						406,
-					),
-				);
+				return next(new ErrorResponse(`Auth Error (RT): ${err?.message}`, 401));
 			}
 
-			const user = await User.findById(decodedRT.id);
+			if (!refreshPayload?.id) {
+				clearRefreshCookie(res);
+				return next(new ErrorResponse("Auth Error: Incorrect RT.", 406));
+			}
+			const user = await User.findById(refreshPayload.id, "+currentSalt");
 			if (!user) {
 				clearRefreshCookie(res);
-				return next(new ErrorResponse("bad_jwt_No user found.", 404));
+				return next(new ErrorResponse("Auth Error: No user found.", 404));
 			}
 
-			if (user.currentRefreshSalt !== decodedRT.crs) {
+			if (user.currentSalt !== refreshPayload.cs) {
 				clearRefreshCookie(res);
-				return next(new ErrorResponse("bad_jwt_Bad Refresh Token.", 406));
+				return next(new ErrorResponse("Auth Error: Old RT.", 406));
 			}
-
-			if (user.email !== currentUserEmail) {
-				clearRefreshCookie(res);
-				return next(new ErrorResponse("bad_jwt_Unauthorized Email.", 401));
-			}
-			// if (user.email !== userEmail) {
-			// 	clearRefreshCookie(res);
-			// 	return next(new ErrorResponse("bad_jwt_Unauthorized Email.", 401));
-			// }
 
 			const authHeader =
 				req.headers?.Authorization || req.headers?.authorization;
 			if (!authHeader?.startsWith("Bearer ")) {
-				return next(
-					new ErrorResponse("bad_jwt_Unauthorized: Missing JWT header", 403),
-				);
+				clearRefreshCookie(res);
+				return next(new ErrorResponse("Auth Error: No Bearer.", 404));
 			}
 
 			const accessToken = authHeader.split(" ")[1];
 			if (!accessToken) {
-				return next(
-					new ErrorResponse("bad_jwt_Unauthorized: Missing access token", 403),
-				);
+				clearRefreshCookie(res);
+				return next(new ErrorResponse("Auth Error: No AT.", 404));
 			}
 
 			jwt.verify(
 				accessToken,
 				process.env.JWT_ACCESS_SECRET,
-				async (err, decodedAT) => {
-					if (err)
-						return next(
-							new ErrorResponse(
-								`bad_jwt_ACCESS TOKEN ERROR: ${err?.message}`,
-								403,
-							),
-						);
-
-					if (
-						decodedAT.cas !== user.currentAccessSalt ||
-						decodedAT.crs !== user.currentRefreshSalt
-					) {
-						clearRefreshCookie(res);
-						return next(new ErrorResponse("bad_jwt_Bad Token(s).", 406));
+				asyncHandler(async (err, accessPayload) => {
+					if (err) {
+						if (err?.message === "jwt expired") {
+							const correctAccessPayload = jwt.verify(
+								accessToken,
+								process.env.JWT_ACCESS_SECRET,
+								{ ignoreExpiration: true },
+							);
+							// For expired access tokens, we want to check if the access token is from correct user.
+							if (
+								user._id.equals(correctAccessPayload?.id) &&
+								correctAccessPayload?.cs === user.currentSalt
+							) {
+								return next(
+									new ErrorResponse("Auth Error: Access token expired.", 403),
+								);
+							} else {
+								return next(
+									new ErrorResponse(`Auth Error (cAT): ${err?.message}`, 406),
+								);
+							}
+						} else {
+							clearRefreshCookie(res);
+							return next(
+								new ErrorResponse(`Auth Error (AT): ${err?.message}`, 401),
+							);
+						}
 					}
-
-					if (
-						!user._id.equals(decodedAT.id) &&
-						!decodedAT.id.equals(decodedRT.id)
-					) {
-						clearRefreshCookie(res);
-						return next(new ErrorResponse("bad_jwt_Bad User.", 406));
+					if (accessPayload) {
+						if (
+							!user._id.equals(accessPayload?.id) ||
+							accessPayload?.cs !== user.currentSalt
+						) {
+							return next(
+								new ErrorResponse("Auth Error: infected access token.", 401),
+							);
+						} else {
+							console.log("verified ->");
+							next();
+						}
 					}
-
-					req.user = user;
-					next();
-				},
+				}),
 			);
 		}),
 	);

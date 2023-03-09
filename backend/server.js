@@ -24,8 +24,8 @@ const app = express();
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "2mb", extended: true }));
 app.use(express.urlencoded({ limit: "2mb", extended: true }));
-// app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
-app.use(cookieParser());
+app.use(cookieParser(process.env.COOKIE_PARSER_SECRET));
+// app.use(cookieParser());
 
 // Secure app with http headers
 app.use(helmet());
@@ -51,7 +51,7 @@ app.use("/api/users", usersRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/posts", postsRoute);
 
-app.get("/secret", verifyJWT, (req, res) => {
+app.get("/api/secret", verifyJWT, (req, res) => {
 	res.status(200).json({ success: true, message: "VERY SECRET!" });
 });
 

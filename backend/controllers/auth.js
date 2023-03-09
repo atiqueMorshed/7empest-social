@@ -51,7 +51,7 @@ export const register = asyncHandler(async (req, res, next) => {
 		location,
 		occupation,
 	});
-	console.log(user);
+
 	await sendToken(res, user, 201);
 });
 
