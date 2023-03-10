@@ -8,15 +8,18 @@ import {
 	register,
 	resetPassword,
 } from "../controllers/auth.js";
+import { loginLimiter } from "../middleware/requestLimiter.js";
 
 const router = express.Router();
 
-router.route("/login").post(login);
+router.route("/login").post(loginLimiter, login);
 router.route("/logout").post(logout);
-router.route("/forgotpassword").post(forgotPassword);
+router.route("/forgotpassword").post(loginLimiter, forgotPassword);
 router.route("/resetpassword/:resetToken").put(resetPassword);
 router.route("/refresh/").get(refresh);
 
 // Route with file upload
-router.route("/register").post(uploadFile.single("avatar"), register);
+router
+	.route("/register")
+	.post(loginLimiter, uploadFile.single("avatar"), register);
 export default router;
