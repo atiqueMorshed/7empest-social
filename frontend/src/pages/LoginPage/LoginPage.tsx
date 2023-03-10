@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { Form, Formik } from "formik";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "../../app/hooks";
 import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
 import { useLoginMutation } from "../../features/auth/authApi";
@@ -22,10 +22,15 @@ const LoginPage = () => {
 	const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
 	const [login, { isError, error, isLoading }] = useLoginMutation();
 
+	const location = useLocation();
+
+	//
+	const from = location?.state?.from || "/home";
+
 	// Checks if user already logged in.
 	useEffect(() => {
-		if (isUserLoggedIn) navigate("/home");
-	}, [isUserLoggedIn, navigate]);
+		if (isUserLoggedIn) navigate(from, { replace: true });
+	}, [isUserLoggedIn, navigate, location]);
 
 	const initialValues = {
 		email: "",

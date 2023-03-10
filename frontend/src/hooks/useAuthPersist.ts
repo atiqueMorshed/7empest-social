@@ -11,7 +11,6 @@ const useAuthPersist = () => {
 			dispatch(
 				setCredentials({
 					accessToken: accessToken,
-					success: true,
 				}),
 			);
 		}

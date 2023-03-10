@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { RootState } from "../../app/store";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 import { removeCredentials, setCredentials } from "../auth/authSlice";
 
 const baseQuery = fetchBaseQuery({
@@ -25,24 +26,39 @@ const apiSlice = createApi({
 	reducerPath: "api",
 	baseQuery: async (args, api, extraOptions) => {
 		let result = await baseQuery(args, api, extraOptions);
-		// console.log(result);
-		if (result?.error?.status === 403) {
-			console.log("Refreshing Token.");
-			// Gets new access token from refresh token
-			const refreshResult = await baseQuery("/auth/refresh", api, extraOptions);
-			// console.log(refreshResult);
-			// Saves new accessToken to memory
-			if (refreshResult?.data) {
-				api.dispatch(setCredentials({ ...refreshResult.data }));
+		if (result?.error) {
+			const errorMessage = getErrorMessage(result.error);
 
-				// Uses the new accessToken to fetch original request
-				result = await baseQuery(args, api, extraOptions);
-			} else {
-				if (refreshResult?.error?.status === 403) {
-					// refreshResult?.error?.data?.message = "Your login has expired.";
+			// Auth error where error is not because of accessToken expiration
+			if (
+				errorMessage.startsWith("Auth Error") &&
+				result?.error?.status !== 403
+			) {
+				api.dispatch(removeCredentials());
+				return result;
+
+				// Access Token expired
+			} else if (result?.error?.status === 403) {
+				// Gets new access token from refresh token
+				const refreshResult = await baseQuery(
+					"/auth/refresh",
+					api,
+					extraOptions,
+				);
+
+				if (refreshResult?.data) {
+					api.dispatch(setCredentials({ ...refreshResult.data }));
+
+					// Uses the new accessToken to fetch original request
+					result = await baseQuery(args, api, extraOptions);
+				} else {
 					api.dispatch(removeCredentials());
+					// if (refreshResult?.error?.status === 403) {
+					// 	// refreshResult?.error?.data?.message = "Your login has expired.";
+					// 	api.dispatch(removeCredentials());
+					// }
+					return refreshResult;
 				}
-				return refreshResult;
 			}
 		}
 

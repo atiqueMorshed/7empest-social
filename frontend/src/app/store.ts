@@ -1,7 +1,6 @@
 import { Action, ThunkAction, configureStore } from "@reduxjs/toolkit";
 import apiSlice from "../features/api/apiSlice";
 import authSlice from "../features/auth/authSlice";
-import secretSlice from "../features/secret/secretSlice";
 import themeSlice from "../features/theme/themeSlice";
 
 export const store = configureStore({
@@ -9,7 +8,6 @@ export const store = configureStore({
 		[apiSlice.reducerPath]: apiSlice.reducer,
 		auth: authSlice,
 		theme: themeSlice,
-		secret: secretSlice,
 	},
 	devTools: process.env.NODE_ENV !== "production",
 	middleware: (getDefaultMiddlewares) =>

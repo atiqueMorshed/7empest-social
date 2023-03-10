@@ -16,10 +16,11 @@ const authSlice = createSlice({
 
 			state.accessToken = accessToken;
 			state.success = true;
-
-			localStorage.setItem("7empest-social-at", accessToken);
+			if (accessToken !== localStorage.getItem("7empest-social-at"))
+				localStorage.setItem("7empest-social-at", accessToken);
 		},
 		removeCredentials: (state) => {
+			console.log("IN REMOVE CREDENTIALS");
 			state.accessToken = undefined;
 			state.success = false;
 
