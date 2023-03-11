@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "../../app/hooks";
 import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
+import LoadingPage from "../../components/LoadingPage/LoadingPage";
 import { useLoginMutation } from "../../features/auth/authApi";
 import { selectIsUserLoggedIn } from "../../features/auth/authSlice";
 import { getErrorMessage } from "../../utils/getErrorMessage";
@@ -26,7 +27,7 @@ const LoginPage = () => {
 	const [login, { isError, error, isLoading, isSuccess }] = useLoginMutation();
 
 	//
-	const from = location?.state?.from?.pathname || "/home";
+	const from = location?.state?.from?.pathname || "/";
 
 	// Redirects on successful login or if already logged in.
 	useEffect(() => {
@@ -44,6 +45,8 @@ const LoginPage = () => {
 	) => {
 		login(values);
 	};
+
+	if (isLoading) return <LoadingPage />;
 
 	return (
 		<Container

@@ -79,8 +79,20 @@ const authApi = apiSlice.injectEndpoints({
 				}
 			},
 		}),
+
+		checkAuthorization: builder.query<SuccessMessageType, void>({
+			query: () => ({
+				url: "/auth/check",
+				method: "GET",
+			}),
+		}),
 	}),
 });
 
-export const { useLoginMutation, useRegisterMutation, useLogoutMutation } =
-	authApi;
+export const {
+	useLoginMutation,
+	useRegisterMutation,
+	useLogoutMutation,
+	useRefreshQuery,
+	useCheckAuthorizationQuery,
+} = authApi;

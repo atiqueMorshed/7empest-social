@@ -78,11 +78,7 @@ function Navbar() {
 							alignItems: "center",
 						}}
 					>
-						<Link
-							component={RouterLink}
-							to="/home"
-							sx={{ textDecoration: "none" }}
-						>
+						<Link component={RouterLink} to="/" sx={{ textDecoration: "none" }}>
 							<Typography
 								variant="h6"
 								sx={{

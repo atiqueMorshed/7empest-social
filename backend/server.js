@@ -12,7 +12,6 @@ import { fileURLToPath } from "url";
 import connectDB from "./config/connectDB.js";
 import corsOptions from "./config/corsOptions.js";
 import errorHandler from "./middleware/errorHandler.js";
-import verifyJWT from "./middleware/verifyJWT.js";
 import authRoute from "./routes/auth.js";
 import postsRoute from "./routes/posts.js";
 import usersRoute from "./routes/users.js";
@@ -50,10 +49,6 @@ app.get("/", (req, res) => {
 app.use("/api/users", usersRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/posts", postsRoute);
-
-app.get("/api/secret", verifyJWT, (req, res) => {
-	res.status(200).json({ success: true, message: "VERY SECRET!" });
-});
 
 // Error Handler middleware
 app.use(errorHandler);

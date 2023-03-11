@@ -77,6 +77,15 @@ export const login = asyncHandler(async (req, res, next) => {
 });
 
 // @access Public
+// @desc Check user authorization
+// @route /auth/check GET
+export const checkAuthorization = (req, res) => {
+	res
+		.status(200)
+		.json({ success: true, message: "The user authorization was successful." });
+};
+
+// @access Public
 // @desc Reset Password
 // @route /auth/resetpassword/:resetToken POST
 // @req.body password
@@ -277,6 +286,7 @@ export const refresh = asyncHandler(async (req, res, next) => {
 				asyncHandler(async (err, accessPayload) => {
 					if (err) {
 						clearRefreshCookie(res);
+						console.log(accessToken);
 						return next(
 							new ErrorResponse(`Auth Error (AT): ${err?.message}`, 401),
 						);

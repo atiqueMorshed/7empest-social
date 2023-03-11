@@ -24,7 +24,7 @@ const authSlice = createSlice({
 			state.accessToken = undefined;
 			state.success = false;
 
-			localStorage?.removeItem("7empest-social-at");
+			localStorage.removeItem("7empest-social-at");
 		},
 	},
 });

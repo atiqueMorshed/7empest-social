@@ -47,12 +47,9 @@ const RegisterPage = () => {
 		undefined,
 	);
 
-	//
-	const from = location?.state?.from || "/home";
-
 	// Checks if user already logged in.
 	useEffect(() => {
-		if (isUserLoggedIn) navigate(from, { replace: true });
+		if (isUserLoggedIn) navigate("/", { replace: true });
 	}, [isUserLoggedIn, navigate, location]);
 
 	const initialValues = {
@@ -439,7 +436,7 @@ const RegisterPage = () => {
 									<Stack alignItems="end" width="100%" marginTop={3}>
 										<Link
 											component={RouterLink}
-											to="/register"
+											to="/login"
 											sx={{
 												textDecoration: "none",
 											}}
