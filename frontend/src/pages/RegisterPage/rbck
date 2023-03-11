@@ -1,0 +1,341 @@
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import SendIcon from "@mui/icons-material/Send";
+import {
+	Box,
+	Button,
+	Container,
+	Grid,
+	Link,
+	Stack,
+	TextField,
+	Typography,
+} from "@mui/material";
+import { Form, Formik } from "formik";
+import { useEffect } from "react";
+import Dropzone from "react-dropzone";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { useAppSelector } from "../../app/hooks";
+import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
+import { useRegisterMutation } from "../../features/auth/authApi";
+import { selectIsUserLoggedIn } from "../../features/auth/authSlice";
+import { getErrorMessage } from "../../utils/getErrorMessage";
+import { RegisterType, registerSchema } from "./register.types";
+
+const RegisterPage = () => {
+	const navigate = useNavigate();
+	const location = useLocation();
+	const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
+	const [register, { isError, error, isLoading }] = useRegisterMutation();
+
+	//
+	const from = location?.state?.from || "/home";
+
+	// Checks if user already logged in.
+	useEffect(() => {
+		if (isUserLoggedIn) navigate(from, { replace: true });
+	}, [isUserLoggedIn, navigate, location]);
+
+	const initialValues = {
+		firstname: "",
+		lastname: "",
+		avatar: "",
+		username: "",
+		email: "",
+		password: "",
+		confirmPassword: "",
+		location: "",
+		occupation: "",
+	};
+
+	const handleSubmit = async (
+		values: RegisterType,
+		// { setSubmitting, resetForm }: FormikHelpers<RegisterType>,
+	) => {
+		register(values);
+	};
+
+	return (
+		<Container
+			sx={{
+				maxWidth: {
+					xs: "450px",
+					sm: "520px",
+					md: "620px",
+				},
+			}}
+		>
+			<Box
+				sx={{
+					backgroundColor: "background.paper",
+					p: { xs: 3, sm: 3, md: 6 },
+					my: "15vh",
+					textAlign: "center",
+					width: "100%",
+					borderRadius: 2,
+					boxShadow: 3,
+				}}
+			>
+				<Typography
+					sx={{
+						fontSize: 28,
+						fontWeight: 900,
+						letterSpacing: 1.2,
+						color: "text.primary",
+						mb: 4,
+					}}
+				>
+					Register for free!
+				</Typography>
+				<Formik
+					initialValues={initialValues}
+					validationSchema={registerSchema}
+					onSubmit={handleSubmit}
+				>
+					{({
+						values,
+						errors,
+						touched,
+						handleChange,
+						handleBlur,
+						setFieldValue,
+						// isSubmitting,
+					}) => (
+						<Form noValidate>
+							<Grid container spacing={4}>
+								<Grid item xs={12} sm={6}>
+									<TextField
+										id="firstname"
+										type="text"
+										name="firstname"
+										label="Firstname"
+										required
+										autoComplete="off"
+										fullWidth
+										autoFocus
+										error={touched.firstname && Boolean(errors?.firstname)}
+										helperText={touched.firstname && errors?.firstname}
+										onChange={handleChange}
+										onBlur={handleBlur}
+										value={values.firstname}
+									/>
+								</Grid>
+
+								<Grid item xs={12} sm={6}>
+									<TextField
+										id="lastname"
+										type="lastname"
+										name="lastname"
+										label="Lastname"
+										required
+										autoComplete="off"
+										fullWidth
+										error={touched.lastname && Boolean(errors?.lastname)}
+										helperText={touched.lastname && errors?.lastname}
+										onChange={handleChange}
+										onBlur={handleBlur}
+										value={values.lastname}
+									/>
+								</Grid>
+
+								<Grid item xs={12} sm={6}>
+									<TextField
+										id="username"
+										type="username"
+										name="username"
+										label="Username"
+										required
+										autoComplete="off"
+										fullWidth
+										error={touched.username && Boolean(errors?.username)}
+										helperText={touched.username && errors?.username}
+										onChange={handleChange}
+										onBlur={handleBlur}
+										value={values.username}
+									/>
+								</Grid>
+
+								<Grid item xs={12} sm={6}>
+									<TextField
+										id="email"
+										type="email"
+										name="email"
+										label="Email"
+										required
+										autoComplete="off"
+										fullWidth
+										error={touched.email && Boolean(errors?.email)}
+										helperText={touched.email && errors?.email}
+										onChange={handleChange}
+										onBlur={handleBlur}
+										value={values.email}
+									/>
+								</Grid>
+
+								<Grid item xs={12} sm={6}>
+									<TextField
+										id="password"
+										type="password"
+										name="password"
+										label="Password"
+										required
+										autoComplete="off"
+										fullWidth
+										error={touched.password && Boolean(errors?.password)}
+										helperText={touched.password && errors?.password}
+										onChange={handleChange}
+										onBlur={handleBlur}
+										value={values.password}
+									/>
+								</Grid>
+
+								<Grid item xs={12} sm={6}>
+									<TextField
+										id="confirmPassword"
+										type="confirmPassword"
+										name="confirmPassword"
+										label="Confirm Password"
+										required
+										autoComplete="off"
+										fullWidth
+										error={
+											touched.confirmPassword &&
+											Boolean(errors?.confirmPassword)
+										}
+										helperText={
+											touched.confirmPassword && errors?.confirmPassword
+										}
+										onChange={handleChange}
+										onBlur={handleBlur}
+										value={values.confirmPassword}
+									/>
+								</Grid>
+
+								<Grid item xs={12} sm={6}>
+									<TextField
+										id="location"
+										type="location"
+										name="location"
+										label="Location"
+										required
+										autoComplete="off"
+										fullWidth
+										error={touched.location && Boolean(errors?.location)}
+										helperText={touched.location && errors?.location}
+										onChange={handleChange}
+										onBlur={handleBlur}
+										value={values.location}
+									/>
+								</Grid>
+
+								<Grid item xs={12} sm={6}>
+									<TextField
+										id="occupation"
+										type="occupation"
+										name="occupation"
+										label="Occupation"
+										required
+										autoComplete="off"
+										fullWidth
+										error={touched.occupation && Boolean(errors?.occupation)}
+										helperText={touched.occupation && errors?.occupation}
+										onChange={handleChange}
+										onBlur={handleBlur}
+										value={values.occupation}
+									/>
+								</Grid>
+
+								<Grid item xs={12}>
+									<Dropzone
+										multiple={false}
+										maxFiles={1}
+										minSize={200000}
+										maxSize={3000000}
+										onDropRejected={(rej) => console.log(rej)}
+										accept={{
+											"images/png": [".png"],
+											"images/jpg": [".jpg"],
+											"images/jpeg": [".jpeg"],
+										}}
+										onDrop={(acceptedFiles) => {
+											console.log(acceptedFiles);
+											setFieldValue("avatar", acceptedFiles[0]);
+										}}
+									>
+										{({ getRootProps, getInputProps }) => (
+											<Box
+												{...getRootProps()}
+												border={"1px dashed #91caff"}
+												sx={{
+													"&:hover": {
+														cursor: "pointer",
+														border: "1px dashed #4096ff",
+													},
+													width: "100%",
+												}}
+											>
+												<input {...getInputProps()} />
+												{!values.avatar ? (
+													<p>Drop avatar or click to add.</p>
+												) : (
+													<Box>
+														{/* <Typography>{values.avatar}</Typography> */}
+														<Typography>XXX</Typography>
+														<EditOutlinedIcon />
+													</Box>
+												)}
+											</Box>
+										)}
+									</Dropzone>
+								</Grid>
+
+								<Grid item xs={12}>
+									<Button
+										type="submit"
+										disabled={isLoading}
+										color="primary"
+										variant="contained"
+										endIcon={<SendIcon />}
+										fullWidth
+										sx={{ py: 1.8 }}
+									>
+										Submit
+									</Button>
+
+									<Stack alignItems="end" width="100%" marginTop={3}>
+										<Link
+											component={RouterLink}
+											to="/register"
+											sx={{
+												textDecoration: "none",
+											}}
+										>
+											<Typography
+												sx={{
+													fontSize: 12,
+													color: "primary.light",
+												}}
+											>
+												Dont have an account?
+											</Typography>
+										</Link>
+									</Stack>
+
+									{isError && (
+										<ErrorMessage
+											message={
+												getErrorMessage(error) ||
+												"There was an error logging in."
+											}
+										/>
+									)}
+								</Grid>
+							</Grid>
+						</Form>
+					)}
+				</Formik>
+			</Box>
+		</Container>
+	);
+};
+
+export default RegisterPage;

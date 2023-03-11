@@ -32,10 +32,17 @@ export const getErrorMessage = (
 
 	// FetchBaseQueryError
 	if (isFetchBaseQueryError(error)) {
-		if ("error" in error) return error.error;
-		else if (error?.data) {
+		if ("error" in error) {
+			return error.error;
+		} else if (error?.data) {
 			if (typeof error.data === "string") return error.data;
-			else return JSON.stringify(error.data);
+			else if (
+				typeof error.data === "object" &&
+				"message" in error.data &&
+				typeof error.data.message === "string"
+			) {
+				return error.data.message;
+			} else return JSON.stringify(error.data);
 		} else return "Unexpected fetch base error.";
 	} else {
 		// SerializedError

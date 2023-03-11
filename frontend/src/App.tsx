@@ -10,6 +10,7 @@ import useAuthPersist from "./hooks/useAuthPersist";
 import HomePage from "./pages/HomePage/HomePage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
+import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import SecretPage from "./pages/SecretPage";
 
 const App = () => {
@@ -29,6 +30,7 @@ const App = () => {
 				<Navbar />
 				<Routes>
 					<Route path="/" element={<LoginPage />} />
+					<Route path="/register" element={<RegisterPage />} />
 					<Route path="/home" element={<HomePage />} />
 					<Route path="/secret" element={<SecretPage />} />
 					<Route path="/profile/:username" element={<ProfilePage />} />

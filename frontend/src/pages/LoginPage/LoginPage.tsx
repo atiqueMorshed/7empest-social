@@ -4,12 +4,14 @@ import {
 	Button,
 	Container,
 	Grid,
+	Link,
+	Stack,
 	TextField,
 	Typography,
 } from "@mui/material";
 import { Form, Formik } from "formik";
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "../../app/hooks";
 import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
 import { useLoginMutation } from "../../features/auth/authApi";
@@ -100,7 +102,6 @@ const LoginPage = () => {
 										required
 										autoComplete="off"
 										fullWidth
-										autoFocus
 										error={touched.email && Boolean(errors?.email)}
 										helperText={touched.email && errors?.email}
 										onChange={handleChange}
@@ -136,6 +137,26 @@ const LoginPage = () => {
 									>
 										Submit
 									</Button>
+
+									<Stack alignItems="end" width="100%" marginTop={3}>
+										<Link
+											component={RouterLink}
+											to="/register"
+											sx={{
+												textDecoration: "none",
+											}}
+										>
+											<Typography
+												sx={{
+													fontSize: 12,
+													color: "primary.light",
+												}}
+											>
+												Dont have an account?
+											</Typography>
+										</Link>
+									</Stack>
+
 									{isError && (
 										<ErrorMessage
 											message={

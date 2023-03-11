@@ -15,7 +15,6 @@ export const register = asyncHandler(async (req, res, next) => {
 	const {
 		firstname,
 		lastname,
-		avatar,
 		username,
 		email,
 		password,
@@ -24,6 +23,7 @@ export const register = asyncHandler(async (req, res, next) => {
 		occupation,
 	} = req.body;
 
+	const { filename } = req?.file || {};
 	if (
 		!firstname ||
 		!lastname ||
@@ -44,7 +44,7 @@ export const register = asyncHandler(async (req, res, next) => {
 	const user = await User.create({
 		firstname,
 		lastname,
-		avatar,
+		avatar: filename,
 		username,
 		email,
 		password,

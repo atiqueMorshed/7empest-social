@@ -19,7 +19,5 @@ router.route("/resetpassword/:resetToken").put(resetPassword);
 router.route("/refresh/").get(refresh);
 
 // Route with file upload
-router
-	.route("/register")
-	.post(loginLimiter, uploadFile.single("avatar"), register);
+router.route("/register").post(uploadFile.single("avatar"), register);
 export default router;
