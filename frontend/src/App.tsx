@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useAppSelector } from "./app/hooks";
 import Navbar from "./components/Navbar/Navbar";
+import NotFoundPage from "./components/NotFoundPage/NotFoundPage";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import { themeSettings } from "./components/theme/theme";
 import { selectThemeMode } from "./features/theme/themeSlice";
@@ -49,6 +50,7 @@ const App = () => {
 						}
 					/>
 					<Route path="/profile/:username" element={<ProfilePage />} />
+					<Route path="*" element={<NotFoundPage />} />
 				</Routes>
 			</Box>
 		</ThemeProvider>

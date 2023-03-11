@@ -5,7 +5,7 @@ const LoadingPage = () => {
 		<Box
 			sx={{
 				display: "flex",
-				height: "100vh",
+				height: { xs: "calc(100vh - 56px)", sm: "calc(100vh - 64px)" },
 				width: "100vw",
 				justifyContent: "center",
 				alignItems: "center",

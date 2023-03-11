@@ -5,6 +5,8 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { store } from "./app/store";
+import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
+import ErrorPage from "./components/ErrorPage/ErrorPage";
 import "./index.css";
 
 const root = ReactDOM.createRoot(
@@ -12,11 +14,13 @@ const root = ReactDOM.createRoot(
 );
 root.render(
 	<React.StrictMode>
-		<BrowserRouter>
-			<Provider store={store}>
-				<CssBaseline />
-				<App />
-			</Provider>
-		</BrowserRouter>
+		<ErrorBoundary fallback={<ErrorPage />}>
+			<BrowserRouter>
+				<Provider store={store}>
+					<CssBaseline />
+					<App />
+				</Provider>
+			</BrowserRouter>
+		</ErrorBoundary>
 	</React.StrictMode>,
 );
