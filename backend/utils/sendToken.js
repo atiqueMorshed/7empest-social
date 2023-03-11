@@ -10,7 +10,7 @@ const sendToken = async (res, user, statusCode) => {
 		maxAge: process.env.JWT_REFRESH_COOKIE_EXPIRE,
 	});
 
-	res.status(statusCode).json({
+	return res.status(statusCode).json({
 		success: true,
 		accessToken,
 	});

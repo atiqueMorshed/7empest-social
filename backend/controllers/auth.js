@@ -194,50 +194,158 @@ export const forgotPassword = async (req, res, next) => {
 // @route /auth/refresh/ GET
 // @req.cookie refreshToken, userEmail
 export const refresh = asyncHandler(async (req, res, next) => {
+	//
 	const refreshToken = req.cookies?.tempestRefreshToken;
 
-	if (!refreshToken) return next(new ErrorResponse("Not authorized.", 401));
-
-	const refreshPayload = jwt.verify(
+	if (!refreshToken) {
+		return next(new ErrorResponse("Auth Error: (No RT).", 404));
+	}
+	jwt.verify(
 		refreshToken,
 		process.env.JWT_REFRESH_SECRET,
+		asyncHandler(async (err, refreshPayload) => {
+			// For refresh token error, we will remove the cookie and logout user.
+			if (err) {
+				if (err?.message === "jwt expired") {
+					const correctRefreshPayload = jwt.verify(
+						refreshToken,
+						process.env.JWT_REFRESH_SECRET,
+						{ ignoreExpiration: true },
+					);
+					// For expired refresh tokens, we will just update user currentSalt so that any other active snatched refresh tokens will become invalid
+					// And will clear cookie + trigger logout.
+					const user = await User.findById(
+						correctRefreshPayload?.id,
+						"currentSalt",
+					);
+					if (!user) {
+						clearRefreshCookie(res);
+						return next(
+							new ErrorResponse("Auth Error (RT): User not found [x1].", 404),
+						);
+					}
+					user.getSignedJWTTokens(); // Increases currentSalt
+					await user.save();
+				}
+				// Remove cookie and trigger logout
+				clearRefreshCookie(res);
+				return next(
+					new ErrorResponse(
+						`Auth Error (RT): ${err?.message || "Infected RT"}`,
+						406,
+					),
+				);
+			}
+
+			if (!refreshPayload?.id || !refreshPayload?.cs) {
+				clearRefreshCookie(res);
+				return next(new ErrorResponse("Auth Error: Incorrect RT.", 406));
+			}
+			// Here, we have valid refresh token.
+			const user = await User.findById(refreshPayload.id, "currentSalt");
+			if (!user) {
+				clearRefreshCookie(res);
+				return next(
+					new ErrorResponse("Auth Error (RT): No user found [x2].", 404),
+				);
+			}
+			// For refresh tokens with old currentSalt, we clear cookie & trigger logout
+			if (user.currentSalt !== refreshPayload?.cs) {
+				user.getSignedJWTTokens(); // Increases currentSalt
+				await user.save();
+				clearRefreshCookie(res);
+				return next(new ErrorResponse("Auth Error: Old RT.", 406));
+			}
+
+			const authHeader =
+				req.headers?.Authorization || req.headers?.authorization;
+			if (!authHeader?.startsWith("Bearer ")) {
+				clearRefreshCookie(res);
+				return next(new ErrorResponse("Auth Error: No Bearer.", 404));
+			}
+
+			const accessToken = authHeader.split(" ")[1];
+			if (!accessToken) {
+				clearRefreshCookie(res);
+				return next(new ErrorResponse("Auth Error: No AT.", 404));
+			}
+			// We validate accessToken with ignoreExpiration flag.
+			jwt.verify(
+				accessToken,
+				process.env.JWT_ACCESS_SECRET,
+				{ ignoreExpiration: true },
+				asyncHandler(async (err, accessPayload) => {
+					if (err) {
+						clearRefreshCookie(res);
+						return next(
+							new ErrorResponse(`Auth Error (AT): ${err?.message}`, 401),
+						);
+					}
+
+					// Now that the access token is expired.
+					// Here we check if the access token information is sound
+					// If it is, we generate new tokens and currentSalts.
+					if (
+						user?._id?.equals(accessPayload?.id) &&
+						user?.currentSalt === accessPayload?.cs
+					) {
+						// Every token is sound and currentSalt is latest. So, we send new tokens.
+						await sendToken(res, user, 200);
+					} else {
+						clearRefreshCookie(res);
+						return next(new ErrorResponse("Auth Error: infected AT", 406));
+					}
+				}),
+			);
+		}),
 	);
-	if (!refreshPayload?.id)
-		return next(new ErrorResponse("Not authorized.", 401));
 
-	const authHeader = req.headers?.Authorization || req.headers?.authorization;
-	if (!authHeader?.startsWith("Bearer ")) {
-		return next(new ErrorResponse("Not authorized.", 401));
-	}
+	//
+	//
+	// const refreshToken = req.cookies?.tempestRefreshToken;
 
-	const accessToken = authHeader.split(" ")[1];
-	if (!accessToken) {
-		return next(new ErrorResponse("Not authorized.", 401));
-	}
+	// if (!refreshToken) return next(new ErrorResponse("Not authorized.", 401));
 
-	const accessPayload = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET, {
-		ignoreExpiration: true,
-	});
+	// const refreshPayload = jwt.verify(
+	// 	refreshToken,
+	// 	process.env.JWT_REFRESH_SECRET,
+	// );
+	// if (!refreshPayload?.id)
+	// 	return next(new ErrorResponse("Not authorized.", 401));
 
-	if (!accessPayload?.id)
-		return next(new ErrorResponse("Not authorized.", 401));
-	if (
-		accessPayload.id !== refreshPayload.id ||
-		accessPayload.cs !== refreshPayload.cs
-	)
-		return next(new ErrorResponse("Not authorized.", 401));
+	// const authHeader = req.headers?.Authorization || req.headers?.authorization;
+	// if (!authHeader?.startsWith("Bearer ")) {
+	// 	return next(new ErrorResponse("Not authorized.", 401));
+	// }
 
-	const user = await User.findById(
-		refreshPayload.id,
-		"refreshToken currentSalt",
-	);
+	// const accessToken = authHeader.split(" ")[1];
+	// if (!accessToken) {
+	// 	return next(new ErrorResponse("Not authorized.", 401));
+	// }
 
-	if (!user) return next(new ErrorResponse("No user found.", 404));
+	// const accessPayload = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET, {
+	// 	ignoreExpiration: true,
+	// });
 
-	if (refreshPayload?.cs !== user.currentSalt)
-		return next(new ErrorResponse("Not authorized.", 401));
+	// if (!accessPayload?.id)
+	// 	return next(new ErrorResponse("Not authorized.", 401));
+	// if (
+	// 	accessPayload.id !== refreshPayload.id ||
+	// 	accessPayload.cs !== refreshPayload.cs
+	// )
+	// 	return next(new ErrorResponse("Not authorized.", 401));
 
-	await sendToken(res, user, 200);
+	// const user = await User.findById(
+	// 	refreshPayload.id,
+	// 	"refreshToken currentSalt",
+	// );
+
+	// if (!user) return next(new ErrorResponse("No user found.", 404));
+
+	// if (refreshPayload?.cs !== user.currentSalt)
+	// 	return next(new ErrorResponse("Not authorized.", 401));
+
+	// await sendToken(res, user, 200);
 });
 
 // @access Public
