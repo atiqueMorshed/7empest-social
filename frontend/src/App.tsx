@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useAppSelector } from "./app/hooks";
 import Navbar from "./components/Navbar/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import { themeSettings } from "./components/theme/theme";
 import { selectThemeMode } from "./features/theme/themeSlice";
 import useAuthPersist from "./hooks/useAuthPersist";
@@ -31,8 +32,22 @@ const App = () => {
 				<Routes>
 					<Route path="/" element={<LoginPage />} />
 					<Route path="/register" element={<RegisterPage />} />
-					<Route path="/home" element={<HomePage />} />
-					<Route path="/secret" element={<SecretPage />} />
+					<Route
+						path="/home"
+						element={
+							<ProtectedRoute>
+								<HomePage />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/secret"
+						element={
+							<ProtectedRoute>
+								<SecretPage />
+							</ProtectedRoute>
+						}
+					/>
 					<Route path="/profile/:username" element={<ProfilePage />} />
 				</Routes>
 			</Box>

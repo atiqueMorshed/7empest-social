@@ -279,7 +279,7 @@ const RegisterPage = () => {
 									<Dropzone
 										multiple={false}
 										maxFiles={1}
-										minSize={200000}
+										minSize={40000}
 										maxSize={2000000}
 										accept={{
 											"images/png": [".png"],
@@ -301,7 +301,7 @@ const RegisterPage = () => {
 											setAvatarError(
 												rejectedFile[0]?.errors?.map((errObj) => {
 													if (errObj?.message.includes("bytes")) {
-														return "File must be between 200KB & 2MB";
+														return "File must be between 40KB & 2MB";
 													} else if (
 														errObj?.message.includes("File type must be")
 													) {

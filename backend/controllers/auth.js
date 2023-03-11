@@ -45,8 +45,8 @@ export const register = asyncHandler(async (req, res, next) => {
 		firstname,
 		lastname,
 		avatar: filename,
-		username,
-		email,
+		username: username.toLowerCase(),
+		email: email.toLowerCase(),
 		password,
 		location,
 		occupation,
@@ -64,7 +64,9 @@ export const login = asyncHandler(async (req, res, next) => {
 	if (!email || !password)
 		return next(new ErrorResponse("Email and password is required.", 400));
 
-	const user = await User.findOne({ email }).select("password currentSalt");
+	const user = await User.findOne({ email: email.toLowerCase() }).select(
+		"password currentSalt",
+	);
 
 	if (!user) return next(new ErrorResponse("No user found.", 404));
 

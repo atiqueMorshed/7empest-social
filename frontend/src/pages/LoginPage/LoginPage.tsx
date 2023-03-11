@@ -20,19 +20,18 @@ import { getErrorMessage } from "../../utils/getErrorMessage";
 import { LoginType, loginSchema } from "./login.types";
 
 const LoginPage = () => {
+	const location = useLocation();
 	const navigate = useNavigate();
 	const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
-	const [login, { isError, error, isLoading }] = useLoginMutation();
-
-	const location = useLocation();
+	const [login, { isError, error, isLoading, isSuccess }] = useLoginMutation();
 
 	//
-	const from = location?.state?.from || "/home";
+	const from = location?.state?.from?.pathname || "/home";
 
-	// Checks if user already logged in.
+	// Redirects on successful login or if already logged in.
 	useEffect(() => {
-		if (isUserLoggedIn) navigate(from, { replace: true });
-	}, [isUserLoggedIn, navigate, location]);
+		if (isSuccess || isUserLoggedIn) navigate(from, { replace: true });
+	}, [isSuccess, isUserLoggedIn, navigate]);
 
 	const initialValues = {
 		email: "",
