@@ -42,6 +42,7 @@ const RegisterPage = () => {
 	const [register, { isError, error, isLoading }] = useRegisterMutation();
 
 	const [avatarPreview, setAvatarPreview] = useState("");
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [avatarFile, setAvatarFile] = useState<any>();
 	const [avatarError, setAvatarError] = useState<string[] | undefined>(
 		undefined,
@@ -98,6 +99,7 @@ const RegisterPage = () => {
 					width: "100%",
 					borderRadius: 2,
 					boxShadow: 3,
+					mt: "10%",
 				}}
 			>
 				<Typography
@@ -428,7 +430,7 @@ const RegisterPage = () => {
 										variant="contained"
 										endIcon={<SendIcon />}
 										fullWidth
-										sx={{ py: 1.8 }}
+										sx={{ py: 1.6 }}
 									>
 										Submit
 									</Button>

@@ -16,7 +16,7 @@ const UserMenu = ({ anchorElUser, handleCloseUserMenu }: iProps) => {
 
 	useEffect(() => {
 		if (isSuccess || isError) navigate("/");
-	}, [isSuccess, isError]);
+	}, [isSuccess, isError, navigate]);
 
 	const handleLogout = () => {
 		handleCloseUserMenu();

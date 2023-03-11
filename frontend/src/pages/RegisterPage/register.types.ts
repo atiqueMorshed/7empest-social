@@ -1,4 +1,12 @@
 import * as yup from "yup";
+export const avatarSchema = yup.object().shape({
+	path: yup.string(),
+	lastModified: yup.date(),
+	lastModifiedDate: yup.date(),
+	name: yup.string(),
+	size: yup.number(),
+	type: yup.string(),
+});
 
 export const registerSchema = yup.object().shape({
 	firstname: yup
@@ -70,4 +78,20 @@ export const registerSchema = yup.object().shape({
 		.required("Required"),
 });
 
+export type AvatarType = yup.InferType<typeof avatarSchema>;
+
 export type RegisterType = yup.InferType<typeof registerSchema>;
+
+export const naiveAcceptedFilesTypeCheck = (
+	acceptedFiles: unknown,
+): acceptedFiles is AvatarType[] => {
+	if (
+		acceptedFiles &&
+		Array.isArray(acceptedFiles) &&
+		acceptedFiles.length > 0 &&
+		"name" in acceptedFiles[0]
+	) {
+		return true;
+	}
+	return false;
+};

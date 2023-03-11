@@ -32,7 +32,7 @@ const LoginPage = () => {
 	// Redirects on successful login or if already logged in.
 	useEffect(() => {
 		if (isSuccess || isUserLoggedIn) navigate(from, { replace: true });
-	}, [isSuccess, isUserLoggedIn, navigate]);
+	}, [from, isSuccess, isUserLoggedIn, navigate]);
 
 	const initialValues = {
 		email: "",
@@ -135,7 +135,7 @@ const LoginPage = () => {
 										variant="contained"
 										endIcon={<SendIcon />}
 										fullWidth
-										sx={{ py: 1.8 }}
+										sx={{ py: 1.6 }}
 									>
 										Submit
 									</Button>
