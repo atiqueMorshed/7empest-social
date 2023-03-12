@@ -1,6 +1,6 @@
 import apiSlice from "../api/apiSlice";
-import { AuthType, SuccessMessageType } from "./auth.types";
-import { removeCredentials, setCredentials } from "./authSlice";
+import { AuthGetUserType, AuthType, SuccessMessageType } from "./auth.types";
+import { removeCredentials, setCredentials, setUser } from "./authSlice";
 
 const authApi = apiSlice.injectEndpoints({
 	endpoints: (builder) => ({
@@ -86,6 +86,28 @@ const authApi = apiSlice.injectEndpoints({
 				method: "GET",
 			}),
 		}),
+
+		getUser: builder.query<AuthGetUserType, string>({
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			query: (data) => ({
+				url: "/auth/getuser",
+				method: "GET",
+			}),
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				try {
+					const result = await queryFulfilled;
+
+					if (result?.data) {
+						dispatch(setUser(result.data.user));
+					}
+				} catch (error) {
+					//
+					dispatch(removeCredentials());
+					console.log("ERR IN GET USER");
+					console.log(error);
+				}
+			},
+		}),
 	}),
 });
 
@@ -95,4 +117,5 @@ export const {
 	useLogoutMutation,
 	useRefreshQuery,
 	useCheckAuthorizationQuery,
+	useGetUserQuery,
 } = authApi;

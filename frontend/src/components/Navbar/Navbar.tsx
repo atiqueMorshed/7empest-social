@@ -15,24 +15,34 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
+import { toast } from "react-hot-toast";
 import { Link as RouterLink } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { useGetUserQuery } from "../../features/auth/authApi";
 import { selectIsUserLoggedIn } from "../../features/auth/authSlice";
 import { selectThemeMode, setMode } from "../../features/theme/themeSlice";
+import { getErrorMessage } from "../../utils/getErrorMessage";
+import LoadingPage from "../LoadingPage/LoadingPage";
 import NavMobileMenu from "./NavMobileMenu";
 import NotificationMenu from "./NotificationMenu";
 import UserMenu from "./UserMenu";
 
-// const pages = ["Products", "Pricing", "Blog"];
+// const pages = ["Profile", "Followers", "Blog"];
 function Navbar() {
-	const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
+	const dispatch = useAppDispatch();
 	const mode = useAppSelector(selectThemeMode);
 
-	const dispatch = useAppDispatch();
-
 	const theme = useTheme();
-
 	const isBelowMd = useMediaQuery(theme.breakpoints.down("md"));
+
+	const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
+	const { isSuccess, isError, isLoading, isFetching, data, error } =
+		useGetUserQuery("getUser", {
+			pollingInterval: 30000,
+			skip: !isUserLoggedIn,
+		});
+
+	// console.log({ isSuccess, isError, isLoading, data });
 
 	const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
 		null,
@@ -62,6 +72,16 @@ function Navbar() {
 	const handleCloseUserMenu = () => {
 		setAnchorElUser(null);
 	};
+
+	if (isError && isUserLoggedIn) {
+		let errMsg = getErrorMessage(error);
+		if (errMsg.startsWith("Auth Error"))
+			errMsg = "Authorization failed, you have been logged out.";
+		else errMsg = "Internal server error.";
+		toast(errMsg);
+	}
+
+	if (isLoading || isFetching) return <LoadingPage />;
 
 	return (
 		<AppBar
@@ -156,7 +176,7 @@ function Navbar() {
 							</IconButton>
 						</Tooltip>
 
-						{isUserLoggedIn && (
+						{isSuccess && (
 							<>
 								{/* Notification Menu Icon */}
 								<Tooltip title="Recent Notifications">
@@ -217,7 +237,7 @@ function Navbar() {
 						)}
 
 						{/* User Options Menu Icon */}
-						{!isUserLoggedIn ? (
+						{!isSuccess ? (
 							<Tooltip title="Sign In">
 								<Link
 									component={RouterLink}
@@ -272,11 +292,13 @@ function Navbar() {
 										src="/static/images/avatar/2.jpg"
 									/> */}
 											<Avatar
-												alt="Full Name"
+												alt="User Image"
 												sx={{
 													height: { xs: "28px", sm: "34px" },
 													width: { xs: "28px", sm: "34px" },
+													objectfit: "cover",
 												}}
+												src={`http://localhost:4000/assets/avatar/${data?.user?.avatar}`}
 											/>
 											<Typography
 												variant="h6"
@@ -286,7 +308,7 @@ function Navbar() {
 													textDecoration: "none",
 												}}
 											>
-												{"Profile"}
+												{data?.user?.firstname || "Profile"}
 											</Typography>
 										</Stack>
 									</IconButton>
@@ -295,21 +317,21 @@ function Navbar() {
 						)}
 
 						{/* Notification Menu Dropdown */}
-						{isUserLoggedIn && (
+						{isSuccess && (
 							<NotificationMenu
 								anchorElNotification={anchorElNotification}
 								handleCloseNotificationMenu={handleCloseNotificationMenu}
 							/>
 						)}
 						{/* Search Menu Dropdown */}
-						{isUserLoggedIn && isBelowMd && (
+						{isSuccess && isBelowMd && (
 							<NavMobileMenu
 								anchorElNav={anchorElNav}
 								handleCloseNavMenu={handleCloseNavMenu}
 							/>
 						)}
 						{/* User Menu Dropdown */}
-						{isUserLoggedIn && (
+						{isSuccess && (
 							<UserMenu
 								anchorElUser={anchorElUser}
 								handleCloseUserMenu={handleCloseUserMenu}

@@ -6,7 +6,7 @@ const corsOptions = {
 		if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
 			cb(null, true);
 		} else {
-			cb(new ErrorResponse("Not allowed by CORS.", 403));
+			cb(new ErrorResponse("Not allowed by CORS.", 406));
 		}
 	},
 	credentials: true, // Sets access-control-allow-credentials header.

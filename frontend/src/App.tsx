@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useMemo } from "react";
+import { Toaster } from "react-hot-toast";
 import { Route, Routes } from "react-router-dom";
 import { useAppSelector } from "./app/hooks";
 import Navbar from "./components/Navbar/Navbar";
@@ -20,6 +21,19 @@ const App = () => {
 	const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
 	// adds accessToken from localhost to our store.
 	useAuthPersist();
+
+	// const { toasts } = useToasterStore();
+
+	// const TOAST_LIMIT = 1;
+
+	// // Enforce Limit
+	// useEffect(() => {
+	// 	toasts
+	// 		.filter((t) => t.visible) // Only consider visible toasts
+	// 		.filter((_, i) => i >= TOAST_LIMIT) // Is toast index over limit
+	// 		.forEach((t: { id: string | undefined }) => toast.dismiss(t.id)); // Dismiss – Use toast.remove(t.id) removal without animation
+	// }, [toasts]);
+
 	return (
 		<ThemeProvider theme={theme}>
 			<Box
@@ -29,6 +43,19 @@ const App = () => {
 					color: "text.primary",
 				}}
 			>
+				<Toaster
+					position="top-center"
+					reverseOrder={false}
+					toastOptions={{
+						// Define default options
+						duration: 5000,
+						style: {
+							borderRadius: "5px",
+							background: "#333",
+							color: "#fff",
+						},
+					}}
+				/>
 				<Navbar />
 				<Routes>
 					<Route path="/login" element={<LoginPage />} />

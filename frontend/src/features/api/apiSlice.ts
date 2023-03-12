@@ -1,7 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { Mutex } from "async-mutex";
 import { RootState } from "../../app/store";
 import { getErrorMessage } from "../../utils/getErrorMessage";
 import { removeCredentials, setCredentials } from "../auth/authSlice";
+const mutex = new Mutex();
 
 const baseQuery = fetchBaseQuery({
 	baseUrl: process.env.REACT_APP_BACKEND,
@@ -40,24 +42,35 @@ const apiSlice = createApi({
 				// Access Token expired
 			} else if (result?.error?.status === 403) {
 				// Gets new access token from refresh token
-				const refreshResult = await baseQuery(
-					"/auth/refresh",
-					api,
-					extraOptions,
-				);
 
-				if (refreshResult?.data) {
-					api.dispatch(setCredentials({ ...refreshResult.data }));
+				if (!mutex.isLocked()) {
+					const release = await mutex.acquire();
+					try {
+						const refreshResult = await baseQuery(
+							"/auth/refresh",
+							api,
+							extraOptions,
+						);
 
-					// Uses the new accessToken to fetch original request
-					result = await baseQuery(args, api, extraOptions);
+						if (refreshResult?.data) {
+							api.dispatch(setCredentials({ ...refreshResult.data }));
+
+							// Uses the new accessToken to fetch original request
+							result = await baseQuery(args, api, extraOptions);
+						} else {
+							api.dispatch(removeCredentials());
+
+							// if (refreshResult?.error?.status === 403) {
+							// 	// refreshResult?.error?.data?.message = "Your login has expired.";
+							// 	api.dispatch(removeCredentials());
+							// }
+						}
+					} finally {
+						release();
+					}
 				} else {
-					api.dispatch(removeCredentials());
-					// if (refreshResult?.error?.status === 403) {
-					// 	// refreshResult?.error?.data?.message = "Your login has expired.";
-					// 	api.dispatch(removeCredentials());
-					// }
-					return refreshResult;
+					await mutex.waitForUnlock();
+					result = await baseQuery(args, api, extraOptions);
 				}
 			}
 		}

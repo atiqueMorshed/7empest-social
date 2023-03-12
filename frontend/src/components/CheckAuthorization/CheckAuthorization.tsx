@@ -11,12 +11,14 @@ type iProps = {
 
 const CheckAuthorization = ({ children }: iProps) => {
 	const dispatch = useAppDispatch();
-	const { isLoading, isError, isSuccess, isFetching } =
+	const { isLoading, isError, isSuccess, isFetching, error } =
 		useCheckAuthorizationQuery();
 
 	if (isLoading || isFetching) return <LoadingPage />;
 
 	if (isError) {
+		console.log("CheckAuthorization Error.");
+		console.log(error);
 		dispatch(removeCredentials);
 		return <Navigate to="/login" replace />;
 	}

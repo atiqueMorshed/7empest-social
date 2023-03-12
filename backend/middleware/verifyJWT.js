@@ -81,6 +81,7 @@ const verifyJWT = async (req, res, next) => {
 						);
 					} else {
 						console.log("verified ->");
+						req.userId = accessPayload?.id;
 						next();
 					}
 				}),

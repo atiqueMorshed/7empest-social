@@ -3,6 +3,7 @@ import uploadFile from "../config/multerDiskStorage.js";
 import {
 	checkAuthorization,
 	forgotPassword,
+	getUser,
 	login,
 	logout,
 	refresh,
@@ -19,6 +20,7 @@ router.route("/forgotpassword").post(loginLimiter, forgotPassword);
 router.route("/resetpassword/:resetToken").put(resetPassword);
 router.route("/refresh/").get(refresh);
 router.route("/check").get(verifyJWT, checkAuthorization);
+router.route("/getuser").get(verifyJWT, getUser);
 
 // Route with file upload
 router.route("/register").post(uploadFile.single("avatar"), register);

@@ -76,6 +76,23 @@ export const login = asyncHandler(async (req, res, next) => {
 	await sendToken(res, user, 200);
 });
 
+// @access Private
+// @desc Logged in user data
+// @route /auth/getuser POST
+// @req.body email, password
+export const getUser = asyncHandler(async (req, res, next) => {
+	const { userId } = req;
+	if (!userId)
+		return next(new ErrorResponse("Could not receive user ID.", 404));
+
+	const user = await User.findById(userId);
+	if (!user) return next(new ErrorResponse("No user found.", 404));
+
+	console.log(user);
+
+	res.status(200).json({ success: true, user });
+});
+
 // @access Public
 // @desc Check user authorization
 // @route /auth/check GET
