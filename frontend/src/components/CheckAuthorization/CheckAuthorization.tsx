@@ -19,7 +19,7 @@ const CheckAuthorization = ({ children }: iProps) => {
 	if (isError) {
 		console.log("CheckAuthorization Error.");
 		console.log(error);
-		dispatch(removeCredentials);
+		dispatch(removeCredentials());
 		return <Navigate to="/login" replace />;
 	}
 

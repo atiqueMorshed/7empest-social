@@ -1,6 +1,7 @@
 import * as yup from "yup";
 
 export const authUserSchema = yup.object({
+	_id: yup.string(),
 	firstname: yup.string().required(),
 	lastname: yup.string().required(),
 	avatar: yup.string().optional(),

@@ -1,12 +1,13 @@
 import { Search } from "@mui/icons-material";
-import { Box, IconButton, InputBase, Menu } from "@mui/material";
+import { Box, IconButton, Menu } from "@mui/material";
+import SearchPeople from "./SearchPeople/SearchPeople";
 
 type iProps = {
 	anchorElNav: null | HTMLElement;
 	handleCloseNavMenu: () => void;
 };
 
-const NavMobileMenu = ({ anchorElNav, handleCloseNavMenu }: iProps) => {
+const SearchMobileMenu = ({ anchorElNav, handleCloseNavMenu }: iProps) => {
 	return (
 		<Menu
 			id="menu-appbar-nav"
@@ -23,30 +24,25 @@ const NavMobileMenu = ({ anchorElNav, handleCloseNavMenu }: iProps) => {
 			open={Boolean(anchorElNav)}
 			onClose={handleCloseNavMenu}
 			sx={{
-				display: { xs: "block", md: "none" },
 				mt: { xs: "45px", sm: "55px" },
 			}}
 		>
 			<Box
 				sx={{
-					display: { xs: "flex", md: "none" },
 					backgroundColor: "background.offset2",
 					borderRadius: 1,
 					my: 1,
 					mx: 2,
-					width: "200px",
+					width: "250px",
 				}}
 			>
 				<IconButton size="small">
 					<Search />
 				</IconButton>
-				<InputBase
-					sx={{ fontSize: "10px" }}
-					placeholder="Search by name/ username"
-				/>
+				<SearchPeople />
 			</Box>
 		</Menu>
 	);
 };
 
-export default NavMobileMenu;
+export default SearchMobileMenu;

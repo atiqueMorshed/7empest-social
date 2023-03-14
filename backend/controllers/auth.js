@@ -88,8 +88,6 @@ export const getUser = asyncHandler(async (req, res, next) => {
 	const user = await User.findById(userId);
 	if (!user) return next(new ErrorResponse("No user found.", 404));
 
-	console.log(user);
-
 	res.status(200).json({ success: true, user });
 });
 

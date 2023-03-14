@@ -5,7 +5,7 @@ import {
 	Notifications,
 	Search,
 } from "@mui/icons-material";
-import { InputBase, Link, Stack, useMediaQuery, useTheme } from "@mui/material";
+import { Link, Stack, useMediaQuery, useTheme } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
@@ -22,39 +22,37 @@ import { useGetUserQuery } from "../../features/auth/authApi";
 import { selectIsUserLoggedIn } from "../../features/auth/authSlice";
 import { selectThemeMode, setMode } from "../../features/theme/themeSlice";
 import { getErrorMessage } from "../../utils/getErrorMessage";
-import LoadingPage from "../LoadingPage/LoadingPage";
-import NavMobileMenu from "./NavMobileMenu";
 import NotificationMenu from "./NotificationMenu";
+import SearchMobileMenu from "./SearchMenuMobile";
+import SearchPeople from "./SearchPeople/SearchPeople";
 import UserMenu from "./UserMenu";
 
 // const pages = ["Profile", "Followers", "Blog"];
-function Navbar() {
+const Navbar = () => {
 	const dispatch = useAppDispatch();
 	const mode = useAppSelector(selectThemeMode);
 
 	const theme = useTheme();
-	const isBelowMd = useMediaQuery(theme.breakpoints.down("md"));
+	const isBelowSm = useMediaQuery(theme.breakpoints.down("sm"));
 
 	const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
-	const { isSuccess, isError, isLoading, isFetching, data, error } =
-		useGetUserQuery("getUser", {
-			pollingInterval: 30000,
-			skip: !isUserLoggedIn,
-		});
+	const { isSuccess, isError, data, error } = useGetUserQuery("getUser", {
+		// pollingInterval: 30000,
+		skip: !isUserLoggedIn,
+	});
 
 	// console.log({ isSuccess, isError, isLoading, data });
 
-	const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
-		null,
-	);
+	const [anchorElSearch, setAnchorElSearch] =
+		React.useState<null | HTMLElement>(null);
 	const [anchorElNotification, setAnchorElNotification] =
 		React.useState<null | HTMLElement>(null);
 	const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
 		null,
 	);
 
-	const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-		setAnchorElNav(event.currentTarget);
+	const handleOpenSearchMenu = (event: React.MouseEvent<HTMLElement>) => {
+		setAnchorElSearch(event.currentTarget);
 	};
 	const handleOpenNotificationMenu = (event: React.MouseEvent<HTMLElement>) => {
 		setAnchorElNotification(event.currentTarget);
@@ -63,8 +61,8 @@ function Navbar() {
 		setAnchorElUser(event.currentTarget);
 	};
 
-	const handleCloseNavMenu = () => {
-		setAnchorElNav(null);
+	const handleCloseSearchMenu = () => {
+		setAnchorElSearch(null);
 	};
 	const handleCloseNotificationMenu = () => {
 		setAnchorElNotification(null);
@@ -75,13 +73,13 @@ function Navbar() {
 
 	if (isError && isUserLoggedIn) {
 		let errMsg = getErrorMessage(error);
+
 		if (errMsg.startsWith("Auth Error"))
 			errMsg = "Authorization failed, you have been logged out.";
 		else errMsg = "Internal server error.";
+
 		toast(errMsg);
 	}
-
-	if (isLoading || isFetching) return <LoadingPage />;
 
 	return (
 		<AppBar
@@ -128,19 +126,21 @@ function Navbar() {
 
 						<Box
 							sx={{
-								display: { xs: "none", md: "flex" },
+								display: { xs: "none", sm: "flex" },
 								backgroundColor: "background.offset2",
 								borderRadius: 1,
 								ml: 3,
+								position: "relative",
 							}}
 						>
 							<IconButton size="small">
 								<Search />
 							</IconButton>
-							<InputBase
+							<SearchPeople />
+							{/* <InputBase
 								sx={{ pr: 2 }}
 								placeholder="Search by name/ username"
-							/>
+							/> */}
 						</Box>
 					</Box>
 
@@ -211,12 +211,12 @@ function Navbar() {
 										aria-label="Navbar menu Items"
 										aria-controls="menu-appbar-nav"
 										aria-haspopup="true"
-										onClick={handleOpenNavMenu}
+										onClick={handleOpenSearchMenu}
 										color="inherit"
 										sx={{
 											display: {
 												xs: "flex",
-												md: "none",
+												sm: "none",
 											},
 											color: "text.primary",
 											backgroundColor: "background.offset2",
@@ -324,11 +324,18 @@ function Navbar() {
 							/>
 						)}
 						{/* Search Menu Dropdown */}
-						{isSuccess && isBelowMd && (
-							<NavMobileMenu
-								anchorElNav={anchorElNav}
-								handleCloseNavMenu={handleCloseNavMenu}
-							/>
+						{isSuccess && isBelowSm && (
+							<Box
+								sx={{
+									backgroundColor: "background.offset2",
+									borderRadius: 1,
+								}}
+							>
+								<SearchMobileMenu
+									anchorElNav={anchorElSearch}
+									handleCloseNavMenu={handleCloseSearchMenu}
+								/>
+							</Box>
 						)}
 						{/* User Menu Dropdown */}
 						{isSuccess && (
@@ -342,5 +349,5 @@ function Navbar() {
 			</Container>
 		</AppBar>
 	);
-}
+};
 export default Navbar;

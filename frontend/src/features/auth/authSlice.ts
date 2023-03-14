@@ -13,7 +13,7 @@ const authSlice = createSlice({
 	initialState,
 	reducers: {
 		setCredentials: (state, action) => {
-			console.log("IN SET CREDENTIALS");
+			// console.log("IN SET CREDENTIALS");
 			const { accessToken } = action.payload;
 
 			state.accessToken = accessToken;
@@ -22,7 +22,7 @@ const authSlice = createSlice({
 				localStorage.setItem("7empest-social-at", accessToken);
 		},
 		removeCredentials: (state) => {
-			console.log("IN REMOVE CREDENTIALS");
+			// console.log("IN REMOVE CREDENTIALS");
 			state.accessToken = undefined;
 			state.success = false;
 			state.user = undefined;
@@ -30,10 +30,8 @@ const authSlice = createSlice({
 		},
 
 		setUser: (state, action) => {
-			console.log("IN GET USER");
-			const { user } = action.payload;
-
-			state.user = user;
+			// console.log("IN GET USER");
+			state.user = action.payload;
 		},
 	},
 });

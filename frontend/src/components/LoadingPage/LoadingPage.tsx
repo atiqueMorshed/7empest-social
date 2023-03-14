@@ -9,6 +9,9 @@ const LoadingPage = () => {
 				width: "100vw",
 				justifyContent: "center",
 				alignItems: "center",
+				position: "absolute",
+				top: { xs: "56px", sm: "64px" },
+				left: 0,
 			}}
 		>
 			<CircularProgress />

@@ -4,7 +4,7 @@ import ErrorResponse from "../utils/ErrorResponse.js";
 import clearRefreshCookie from "../utils/clearRefreshCookie.js";
 
 const verifyJWT = async (req, res, next) => {
-	console.log("-> verifyJWT");
+	// console.log("-> verifyJWT");
 	const refreshToken = req.cookies?.tempestRefreshToken;
 
 	if (!refreshToken) {
@@ -80,7 +80,7 @@ const verifyJWT = async (req, res, next) => {
 							new ErrorResponse("Auth Error: infected access token.", 401),
 						);
 					} else {
-						console.log("verified ->");
+						// console.log("verified ->");
 						req.userId = accessPayload?.id;
 						next();
 					}

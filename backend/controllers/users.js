@@ -41,6 +41,87 @@ export const getFollowings = expressAsyncHandler(async (req, res, next) => {
 	res.status(200).json({ success: true, user });
 });
 
+// @access Private
+// @desc Find people by search term
+// @route /api/findpeople GET
+// @req.params searchTerm
+export const findPeople = expressAsyncHandler(async (req, res, next) => {
+	const { searchTerm, page } = req.params;
+	if (!searchTerm)
+		return res
+			.status(404)
+			.json({ success: false, message: "No Search Terms." });
+
+	let currPage = 0;
+	try {
+		currPage = parseInt(page);
+	} catch (err) {
+		currPage = 0;
+	}
+
+	let limit = 5;
+	try {
+		limit = parseInt(process.env.FIND_PEOPLE_LIMIT_PER_PAGE);
+	} catch (error) {
+		limit = 5;
+	}
+
+	if (searchTerm.trim().length < 2)
+		return res.status(406).json({ success: false, message: "Too small." });
+
+	const doubleTerm = searchTerm.split(" ");
+
+	let users;
+	let filter = {};
+	const select =
+		"firstname lastname username avatar standing followerTotal followingTotal";
+	const window = { skip: currPage * limit, limit };
+
+	if (doubleTerm && doubleTerm?.length === 2 && doubleTerm[1] !== "") {
+		filter = {
+			$or: [
+				{
+					firstname: { $regex: "^" + doubleTerm[0], $options: "i" },
+					lastname: { $regex: "^" + doubleTerm[1], $options: "i" },
+				},
+				{
+					firstname: { $regex: "^" + doubleTerm[1], $options: "i" },
+					lastname: { $regex: "^" + doubleTerm[0], $options: "i" },
+				},
+				{
+					location: { $regex: searchTerm, $options: "i" },
+				},
+
+				{
+					occupation: { $regex: searchTerm, $options: "i" },
+				},
+			],
+			_id: { $ne: req?.userId },
+		};
+	} else {
+		filter = {
+			$or: [
+				{ firstname: { $regex: searchTerm, $options: "i" } },
+				{ lastname: { $regex: searchTerm, $options: "i" } },
+				{ username: { $regex: searchTerm, $options: "i" } },
+				{ email: { $regex: searchTerm, $options: "i" } },
+				{ location: { $regex: searchTerm, $options: "i" } },
+				{ occupation: { $regex: searchTerm, $options: "i" } },
+			],
+			_id: { $ne: req?.userId },
+		};
+	}
+
+	users = await User.find(filter, select, window);
+
+	const totalUsers = await User.find(filter).countDocuments();
+
+	if (!users || users?.length === 0)
+		return next(new ErrorResponse("..No user found..", 404));
+
+	res.status(200).json({ success: true, users, totalUsers });
+});
+
 // @access Public
 // @desc Add or remove follower
 // @route /api/users/:followingUsername/follow-unfollow POST

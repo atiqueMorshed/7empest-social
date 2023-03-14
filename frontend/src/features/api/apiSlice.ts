@@ -54,7 +54,7 @@ const apiSlice = createApi({
 
 						if (refreshResult?.data) {
 							api.dispatch(setCredentials({ ...refreshResult.data }));
-
+							console.log("REFRESHED");
 							// Uses the new accessToken to fetch original request
 							result = await baseQuery(args, api, extraOptions);
 						} else {
