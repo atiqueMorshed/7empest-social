@@ -43,8 +43,9 @@ export const getFollowings = expressAsyncHandler(async (req, res, next) => {
 
 // @access Private
 // @desc Find people by search term
-// @route /api/findpeople GET
-// @req.params searchTerm
+// @route /api/findpeople/:searchTerm/:page GET
+// @req.params searchTerm page
+// @req.userId userId of current user
 export const findPeople = expressAsyncHandler(async (req, res, next) => {
 	const { searchTerm, page } = req.params;
 	if (!searchTerm)
@@ -119,27 +120,56 @@ export const findPeople = expressAsyncHandler(async (req, res, next) => {
 	if (!users || users?.length === 0)
 		return next(new ErrorResponse("..No user found..", 404));
 
+	// req.io.emit("socket_users", socket_users);
+
 	res.status(200).json({ success: true, users, totalUsers });
+});
+
+// @access Private
+// @desc Get follow relationships
+// @route /api/getfollowstatus/:username GET
+// @req.params username
+// @req.userId userId of current user
+export const getFollowStatus = expressAsyncHandler(async (req, res, next) => {
+	const { username } = req.params;
+
+	const user = await User.findOne({ username }, "followers followings");
+	if (!user) return next(new ErrorResponse("No user found.", 404));
+
+	const isFollowing =
+		user.followings?.find((_id) => _id.equals(req?.userId)) || false;
+
+	const isFollower =
+		user.followers?.find((_id) => _id.equals(req?.userId)) || false;
+
+	res
+		.status(200)
+		.json({ success: true, isFollowing: isFollowing, isFollower: isFollower });
 });
 
 // @access Public
 // @desc Add or remove follower
 // @route /api/users/:followingUsername/follow-unfollow POST
-// @req.user username
 // @req.params followingUsername
-export const addRemoveFollowers = expressAsyncHandler(
+export const addRemoveFollowings = expressAsyncHandler(
 	async (req, res, next) => {
-		const { username } = req.body;
 		const { followingUsername } = req.params;
+		if (!req?.userId) {
+			new ErrorResponse("Auth Error: Access Denied.", 403);
+		}
 
-		const user = await User.findOne({ username }).select(
+		const user = await User.findById(
+			req.userId,
 			"followings followingTotal followingDates",
 		);
 		if (!user) return next(new ErrorResponse("No user found.", 404));
 
-		const followingUser = await User.findOne({
-			username: followingUsername,
-		}).select("username followers followerTotal followerDates");
+		const followingUser = await User.findOne(
+			{
+				username: followingUsername,
+			},
+			"username followers followerTotal followerDates",
+		);
 		if (!followingUser) return next(new ErrorResponse("No user found.", 404));
 
 		const isFollowing = user.followings?.find((_id) =>
@@ -191,6 +221,19 @@ export const addRemoveFollowers = expressAsyncHandler(
 			? `You unfollowed ${followingUser.username}.`
 			: `You followed ${followingUser.username}.`;
 
-		res.status(200).json({ success: true, message, user });
+		res.status(200).json({
+			success: true,
+			message,
+			currentUser: {
+				_id: user._id,
+				username: user.username,
+				followingTotal: user.followingTotal,
+			},
+			followedUser: {
+				_id: user._id,
+				username: followingUser.username,
+				followerTotal: followingUser.followerTotal,
+			},
+		});
 	},
 );

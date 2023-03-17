@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, CssBaseline } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useMemo } from "react";
 import { Toaster } from "react-hot-toast";
@@ -15,27 +15,15 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import SecretPage from "./pages/SecretPage";
-
 const App = () => {
 	const mode = useAppSelector(selectThemeMode);
 	const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
 	// adds accessToken from localhost to our store.
 	useAuthPersist();
 
-	// const { toasts } = useToasterStore();
-
-	// const TOAST_LIMIT = 1;
-
-	// // Enforce Limit
-	// useEffect(() => {
-	// 	toasts
-	// 		.filter((t) => t.visible) // Only consider visible toasts
-	// 		.filter((_, i) => i >= TOAST_LIMIT) // Is toast index over limit
-	// 		.forEach((t: { id: string | undefined }) => toast.dismiss(t.id)); // Dismiss – Use toast.remove(t.id) removal without animation
-	// }, [toasts]);
-
 	return (
 		<ThemeProvider theme={theme}>
+			<CssBaseline />
 			<Box
 				sx={{
 					backgroundColor: "background.default",

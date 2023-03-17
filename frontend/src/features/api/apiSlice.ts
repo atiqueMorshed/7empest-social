@@ -6,7 +6,7 @@ import { removeCredentials, setCredentials } from "../auth/authSlice";
 const mutex = new Mutex();
 
 const baseQuery = fetchBaseQuery({
-	baseUrl: process.env.REACT_APP_BACKEND,
+	baseUrl: process.env.REACT_APP_BACKEND_API,
 	credentials: "include",
 	prepareHeaders: (headers, { getState }) => {
 		const token =
@@ -77,6 +77,7 @@ const apiSlice = createApi({
 
 		return result;
 	},
+	tagTypes: ["AuthUser", "FindUsers", "FindMoreUsers", "FollowStatus"],
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	endpoints: (builder) => ({}),
 });

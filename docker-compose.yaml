@@ -7,6 +7,8 @@ services:
         ports:
             - 27012:27017 # exposing port to connect to MongoDB Compass.
         container_name: 7empest-social-mongodb
+        logging:
+            driver: none
 
     backend:
         build:
@@ -39,6 +41,19 @@ services:
         stdin_open: true
         tty: true
         container_name: 7empest-social-frontend-app
+
+    # socket:
+    #     build:
+    #         context: ./socket
+    #         dockerfile: Dockerfile.dev
+    #     image: atiquemorshed/7empest-social-socket
+    #     volumes:
+    #         - ./socket:/app
+    #     ports:
+    #         - 8000:8000
+    #     env_file:
+    #         - ./socket/.env
+    #     container_name: 7empest-social-socket-app
 
 volumes:
     mongodbdata:

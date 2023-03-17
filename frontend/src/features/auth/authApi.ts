@@ -93,6 +93,7 @@ const authApi = apiSlice.injectEndpoints({
 				url: "/auth/getuser",
 				method: "GET",
 			}),
+			providesTags: [{ type: "AuthUser", id: "CURRENT" }],
 			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
 				try {
 					const result = await queryFulfilled;

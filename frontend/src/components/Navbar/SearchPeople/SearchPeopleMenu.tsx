@@ -7,7 +7,6 @@ import {
 	Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import Scrollbars from "react-custom-scrollbars-2";
 // import InfiniteScroll from "react-infinite-scroller";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useAppDispatch } from "../../../app/hooks";
@@ -27,7 +26,9 @@ const SearchPeopleMenu = ({ searchTerm, setSearchTerm }: iProps) => {
 
 	const dispatch = useAppDispatch();
 
-	const { isLoading, isSuccess, data } = useFindUsersQuery(searchTerm);
+	const { isLoading, isSuccess, data } = useFindUsersQuery(searchTerm, {
+		skip: !searchTerm,
+	});
 
 	useEffect(() => {
 		if (page > 0)
@@ -77,17 +78,17 @@ const SearchPeopleMenu = ({ searchTerm, setSearchTerm }: iProps) => {
 				zIndex: 1101,
 				top: { xs: 0, sm: 35 },
 				left: { xs: -16, sm: -16 },
-				p: "0.7rem 1rem 1.5rem 1rem",
-				px: { xs: "1rem", sm: "2rem" },
+				p: "0.7rem 0rem 1.5rem 0rem",
+
 				width: { xs: "250px", sm: "320px" },
 			}}
 		>
 			<IconButton
 				sx={{
 					position: "absolute",
-					top: 2,
+					top: { xs: -45, sm: 2 },
 					right: 2,
-					display: { xs: "none", sm: "block" },
+					// display: { xs: "none", sm: "block" },
 				}}
 				onClick={() => setSearchTerm("")}
 			>
@@ -108,6 +109,7 @@ const SearchPeopleMenu = ({ searchTerm, setSearchTerm }: iProps) => {
 						fontWeight: 700,
 						alignSelf: "start",
 						display: { xs: "none", sm: "block" },
+						pl: { xs: "1rem", sm: "2rem" },
 					}}
 				>
 					Enter a search term.
@@ -118,42 +120,50 @@ const SearchPeopleMenu = ({ searchTerm, setSearchTerm }: iProps) => {
 				)}
 				{isLoading && <CircularProgress sx={{ color: "primary.light" }} />}
 				{isSuccess && (
-					<Scrollbars
-						autoHide
-						autoHideTimeout={2000}
-						autoHeight
-						autoHeightMax="50vh"
-					>
-						<InfiniteScroll
-							dataLength={data?.users?.length || 0}
-							next={fetchMore}
-							hasMore={hasMore}
-							loader={
-								<div className="loader" key={0}>
-									Loading ...
-								</div>
-							}
-							height={height}
-						>
+					// <Scrollbars
+					// 	autoHide
+					// 	autoHideTimeout={2000}
+					// 	autoHeight
+					// 	autoHeightMax="50vh"
+					// >
+					<InfiniteScroll
+						dataLength={data?.users?.length || 0}
+						next={fetchMore}
+						hasMore={hasMore}
+						loader={
 							<Box
 								sx={{
 									display: "flex",
-									flexDirection: "column",
 									justifyContent: "center",
-									alignItems: "start",
-									gap: "1rem",
+									alignItems: "center",
+									py: "1rem",
 								}}
 							>
-								{data?.users?.map((user) => (
-									<PersonCard
-										key={user?._id}
-										user={user}
-										setSearchTerm={setSearchTerm}
-									/>
-								))}
+								<CircularProgress />
 							</Box>
-						</InfiniteScroll>
-					</Scrollbars>
+						}
+						height={height}
+					>
+						<Box
+							sx={{
+								display: "flex",
+								flexDirection: "column",
+								justifyContent: "center",
+								alignItems: "start",
+								gap: "1rem",
+								px: { xs: "1rem", sm: "2rem" },
+							}}
+						>
+							{data?.users?.map((user) => (
+								<PersonCard
+									key={user?._id}
+									user={user}
+									setSearchTerm={setSearchTerm}
+								/>
+							))}
+						</Box>
+					</InfiniteScroll>
+					// </Scrollbars>
 				)}
 			</Box>
 		</Box>
