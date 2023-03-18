@@ -67,8 +67,12 @@ const UserSchema = mongoose.Schema({
 		],
 	},
 	standing: {
-		type: String,
-		default: "respectable",
+		type: Number,
+		default: 0,
+	},
+	standingBy: {
+		type: Map,
+		of: mongoose.Schema.Types.ObjectId,
 	},
 	device: {
 		type: String,

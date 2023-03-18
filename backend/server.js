@@ -16,6 +16,7 @@ import errorHandler from "./middleware/errorHandler.js";
 import responseHandler from "./middleware/responseHandler.js";
 import authRoute from "./routes/auth.js";
 import postsRoute from "./routes/posts.js";
+import unsafeWARNINGUpdateDBRoute from "./routes/unsafeWARNINGUpdateDB.js";
 import usersRoute from "./routes/users.js";
 
 // CONFIG
@@ -95,6 +96,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", usersRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/posts", postsRoute);
+app.use("/unsafeWarning", unsafeWARNINGUpdateDBRoute);
 
 //
 // app.use((err, req, res, next) => {

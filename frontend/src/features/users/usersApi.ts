@@ -1,9 +1,13 @@
+import { io } from "socket.io-client";
+import socketOptions from "../../utils/socketOptions";
 import apiSlice from "../api/apiSlice";
 import {
 	AddRemoveFollowingsType,
 	FindPeopleType,
 	FollowStatusType,
 	SearchType,
+	UserWithFollowers,
+	UserWithFollowings,
 } from "./user.types";
 
 const usersApi = apiSlice.injectEndpoints({
@@ -14,37 +18,6 @@ const usersApi = apiSlice.injectEndpoints({
 				method: "GET",
 			}),
 			providesTags: ["FindUsers"],
-			// providesTags: (result, error, args) => {
-			// 	if (result?.users && result?.users?.length > 0) {
-			// 		return [
-			// 			...result.users.map(({ username }) => ({
-			// 				type: "FindUsers" as const,
-			// 				id: username,
-			// 			})),
-			// 			{ type: "FindUsers", id: "USERS" },
-			// 		];
-			// 	} else return [{ type: "FindUsers", id: "USERS" }];
-			// },
-
-			// async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-			// 	const socket = io(`${process.env.REACT_APP_BACKEND}`, {
-			// 		reconnectionDelay: 1000,
-			// 		reconnection: true,
-			// 		reconnectionAttempts: 10,
-			// 		transports: ["websocket"],
-			// 		agent: false,
-			// 		upgrade: false,
-			// 		rejectUnauthorized: false,
-			// 	});
-			// 	try {
-			// 		await queryFulfilled;
-			// 		socket.on("socket_users", (socket_users) => {
-			// 			console.log(socket_users);
-			// 		});
-			// 	} catch (error) {
-			// 		//
-			// 	}
-			// },
 		}),
 
 		findMoreUsers: builder.query<FindPeopleType, SearchType>({
@@ -95,18 +68,35 @@ const usersApi = apiSlice.injectEndpoints({
 			],
 		}),
 
-		getFollowers: builder.query<any, string>({
+		getFollowers: builder.query<UserWithFollowers, string>({
 			query: (username) => ({
 				url: `/users/${username}/followers`,
 				method: "GET",
 			}),
 		}),
 
-		getFollowings: builder.query<any, string>({
+		getFollowings: builder.query<UserWithFollowings, string>({
 			query: (username) => ({
 				url: `/users/${username}/followings`,
 				method: "GET",
 			}),
+			providesTags: ["GetFollowings"],
+			async onCacheEntryAdded(
+				searchTerm,
+				{ cacheDataLoaded, updateCachedData, cacheEntryRemoved },
+			) {
+				if (process.env.REACT_APP_API_URL) {
+					const socket = io(process.env.REACT_APP_API_URL, socketOptions);
+					try {
+						await cacheDataLoaded;
+						socket.on("follow", (data) => {
+							console.log(data);
+						});
+					} catch (error) {
+						//
+					}
+				}
+			},
 		}),
 
 		addRemoveFollowings: builder.mutation<AddRemoveFollowingsType, string>({
@@ -120,16 +110,62 @@ const usersApi = apiSlice.injectEndpoints({
 				// { type: "FindUsers", id: arg },
 				{ type: "FollowStatus", id: arg },
 			],
-			async onQueryStarted(args, { dispatch, queryFulfilled, getState }) {
+			async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
 				try {
 					const result = await queryFulfilled;
 					if (result?.data?.message) {
 						for (const {
 							endpointName,
 							originalArgs,
+						} of usersApi.util.selectInvalidatedBy(getState(), [
+							// eslint-disable-next-line indent
+							"GetFollowings",
+							// eslint-disable-next-line indent
+						])) {
+							if (endpointName === "getFollowings") {
+								// Update getFollowings Cache
+								dispatch(
+									usersApi.util.updateQueryData(
+										"getFollowings",
+										originalArgs,
+										(draft) => {
+											const userAtIndex = draft?.user?.followings?.findIndex(
+												(user) =>
+													user.username == result.data.followedUser.username,
+											);
+											if (
+												userAtIndex === -1 &&
+												result.data.message.includes("You followed")
+											) {
+												// Not in the getFollowings's followings list, so we add new.
+												draft?.user?.followings?.unshift(
+													result.data.followedUser,
+												);
+											} else if (
+												typeof userAtIndex === "number" &&
+												result.data.message.includes("You unfollowed")
+											) {
+												// In the list, so we just replace with new object
+												draft?.user?.followings?.splice(userAtIndex, 1);
+												// userToUpdate.followerTotal =
+												// 	result.data.followedUser.followerTotal;
+												// userToUpdate.followingTotal =
+												// 	result.data.followedUser.followingTotal;
+											}
+										},
+									),
+								);
+							} else {
+								continue;
+							}
+						}
+
+						// Update FindUsers Cache
+						for (const {
+							endpointName,
+							originalArgs,
 						} of usersApi.util.selectInvalidatedBy(getState(), ["FindUsers"])) {
-							if (endpointName !== "findUsers") continue;
-							else {
+							if (endpointName === "findUsers") {
 								dispatch(
 									usersApi.util.updateQueryData(
 										"findUsers",
@@ -147,6 +183,8 @@ const usersApi = apiSlice.injectEndpoints({
 										},
 									),
 								);
+							} else {
+								continue;
 							}
 						}
 					}
@@ -162,6 +200,8 @@ export const {
 	useFindUsersQuery,
 	useGetFollowStatusQuery,
 	useAddRemoveFollowingsMutation,
+	useGetFollowingsQuery,
+	useGetFollowersQuery,
 } = usersApi;
 
 export default usersApi;

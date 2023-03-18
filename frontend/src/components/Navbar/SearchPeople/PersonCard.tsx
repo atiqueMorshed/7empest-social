@@ -13,7 +13,6 @@ import { FindPeopleUserType } from "../../../features/users/user.types";
 
 import BookmarkAddOutlinedIcon from "@mui/icons-material/BookmarkAddOutlined";
 import BookmarkAddedOutlinedIcon from "@mui/icons-material/BookmarkAddedOutlined";
-import StarBorderPurple500OutlinedIcon from "@mui/icons-material/StarBorderPurple500Outlined";
 import { useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import {
@@ -24,7 +23,8 @@ import { getErrorMessage } from "../../../utils/getErrorMessage";
 
 type iProps = {
 	user: FindPeopleUserType;
-	setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+	setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
+	fromConnection?: boolean;
 };
 
 const PersonCard = ({
@@ -35,14 +35,27 @@ const PersonCard = ({
 		avatar,
 		followerTotal,
 		followingTotal,
-		standing,
 	},
 	setSearchTerm,
 }: iProps) => {
-	const fullname = firstname + " " + lastname;
-	// Snackbar S
 	const [open, setOpen] = useState(false);
 
+	const { data } = useGetFollowStatusQuery(username);
+	const [
+		addRemoveFollowings,
+		{ isSuccess, isError, data: addRemoveFollowingsData, error },
+	] = useAddRemoveFollowingsMutation();
+
+	useEffect(() => {
+		if (isSuccess || isError) setOpen(true);
+	}, [isError, isSuccess]);
+
+	useEffect(() => {
+		if (isError) console.log(getErrorMessage(error));
+	}, [error, isError]);
+	const fullname = firstname + " " + lastname;
+
+	// Snackbar S
 	const handleClose = (
 		event?: React.SyntheticEvent | Event,
 		reason?: string,
@@ -55,38 +68,6 @@ const PersonCard = ({
 	};
 	// Snackbar E
 
-	const { data } = useGetFollowStatusQuery(username);
-	const [
-		addRemoveFollowings,
-		{ isSuccess, isError, data: addRemoveFollowingsData, error },
-	] = useAddRemoveFollowingsMutation();
-
-	useEffect(() => {
-		if (isSuccess || isError) setOpen(true);
-	}, [isError, isSuccess]);
-	// if (isSuccess) {
-	// 	return (
-	// 		<Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
-	// 			<Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
-	// 				{addRemoveFollowingsData?.message || "Success"}
-	// 			</Alert>
-	// 		</Snackbar>
-	// 	);
-	// }
-
-	// if (isError) {
-	// 	return (
-	// 		<Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
-	// 			<Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
-	// 				{getErrorMessage(error)}
-	// 			</Alert>
-	// 		</Snackbar>
-	// 	);
-	// }
-	useEffect(() => {
-		if (isError) console.log(getErrorMessage(error));
-	}, [error, isError]);
-
 	return (
 		<>
 			<Box
@@ -94,33 +75,53 @@ const PersonCard = ({
 					display: "flex",
 					justifyContent: "space-between",
 					alignItems: "center",
+					gap: 0,
 				}}
 			>
-				<RouterLink onClick={() => setSearchTerm("")} to={`/${username}`}>
-					<Avatar
-						alt="User Image"
+				<Box sx={{ position: "relative" }}>
+					<RouterLink
+						onClick={() => setSearchTerm && setSearchTerm("")}
+						to={`/${username}`}
+					>
+						<Avatar
+							alt="User Image"
+							sx={{
+								height: { xs: "90px", md: "110px" },
+								width: { xs: "90px", md: "110px" },
+								objectfit: "cover",
+								borderRadius: 2,
+								mr: { sm: "1rem" },
+								gap: 1,
+							}}
+							src={`http://localhost:4000/assets/avatar/${avatar}`}
+						/>
+					</RouterLink>
+					{/* <Box
 						sx={{
-							height: { xs: "90px", md: "110px" },
-							width: { xs: "90px", md: "110px" },
-							objectfit: "cover",
-							borderRadius: 2,
-							gap: 1,
+							position: "absolute",
+							top: { xs: -5, sm: 0 },
+							right: { xs: -5, sm: 10 },
 						}}
-						src={`http://localhost:4000/assets/avatar/${avatar}`}
-					/>
-				</RouterLink>
+					>
+						<Tooltip title={`Standing: ${standing}`}>
+							<IconButton>
+								<RecommendOutlinedIcon sx={{ color: "primary.light" }} />
+							</IconButton>
+						</Tooltip>
+					</Box> */}
+				</Box>
 				<Box
 					sx={{
 						display: "flex",
 						flexDirection: "column",
-						alignItems: "start",
-						gap: 0.2,
+						alignItems: "space-between",
+						gap: 1,
 					}}
 				>
 					<Link
 						sx={{ textDecoration: "none", color: "text.primary" }}
 						component={RouterLink}
-						onClick={() => setSearchTerm("")}
+						onClick={() => setSearchTerm && setSearchTerm("")}
 						to={`/${username}`}
 					>
 						<Typography sx={{ pl: 1 }}>
@@ -130,12 +131,11 @@ const PersonCard = ({
 					<Link
 						sx={{ textDecoration: "none" }}
 						component={RouterLink}
-						onClick={() => setSearchTerm("")}
+						onClick={() => setSearchTerm && setSearchTerm("")}
 						to={`/${username}`}
 					>
 						<Typography
 							sx={{
-								fontSize: "14px",
 								fontWeight: 700,
 								color: "primary.light",
 								pl: 1,
@@ -144,23 +144,7 @@ const PersonCard = ({
 							@{username}
 						</Typography>
 					</Link>
-					<Tooltip title="Standing">
-						<Box
-							sx={{
-								display: "flex",
-								justifyContent: "center",
-								alignItems: "center",
-								gap: 0,
-							}}
-						>
-							<IconButton>
-								<StarBorderPurple500OutlinedIcon
-									sx={{ height: 16, width: 16, color: "success.main" }}
-								/>
-							</IconButton>
-							<Typography sx={{ fontSize: 13 }}>{standing}</Typography>
-						</Box>
-					</Tooltip>
+
 					<Box
 						sx={{
 							display: "flex",
@@ -198,7 +182,7 @@ const PersonCard = ({
 							<Box
 								sx={{
 									display: "flex",
-									justifyContent: "center",
+									justifyContent: "space-between",
 									alignItems: "center",
 								}}
 							>

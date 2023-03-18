@@ -77,7 +77,13 @@ const apiSlice = createApi({
 
 		return result;
 	},
-	tagTypes: ["AuthUser", "FindUsers", "FindMoreUsers", "FollowStatus"],
+	tagTypes: [
+		"AuthUser",
+		"FindUsers",
+		"FindMoreUsers",
+		"FollowStatus",
+		"GetFollowings",
+	],
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	endpoints: (builder) => ({}),
 });

@@ -12,13 +12,10 @@ const HomePage = () => {
 					display: { xs: "block", md: "flex" },
 					gap: 1,
 					justifyContent: "space-between",
-					w: "100%",
 					p: "1rem 5%",
 				}}
 			>
-				<Box sx={{ flexBasis: { md: "35%", lg: "25%", xl: "20%" } }}>
-					<Connections />
-				</Box>
+				<Connections />
 			</Box>
 		</div>
 	);

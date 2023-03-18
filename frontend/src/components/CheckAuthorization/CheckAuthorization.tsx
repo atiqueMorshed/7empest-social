@@ -1,11 +1,9 @@
 import { Typography } from "@mui/material";
-import { useEffect, useRef } from "react";
 import { Navigate } from "react-router-dom";
-import { Socket, io } from "socket.io-client";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { useAppDispatch } from "../../app/hooks";
 import LoadingPage from "../../components/LoadingPage/LoadingPage";
 import { useCheckAuthorizationQuery } from "../../features/auth/authApi";
-import { removeCredentials, selectUser } from "../../features/auth/authSlice";
+import { removeCredentials } from "../../features/auth/authSlice";
 
 type iProps = {
 	children: JSX.Element;
@@ -13,19 +11,9 @@ type iProps = {
 
 const CheckAuthorization = ({ children }: iProps) => {
 	const dispatch = useAppDispatch();
-	const socket = useRef<Socket>();
 
 	const { isLoading, isError, isSuccess, isFetching, error } =
 		useCheckAuthorizationQuery();
-
-	const user = useAppSelector(selectUser);
-
-	useEffect(() => {
-		return () => {
-			socket.current?.emit("removeSocketUser", user?._id);
-			// socket.current?.close();
-		};
-	}, [user]);
 
 	if (isLoading || isFetching) return <LoadingPage />;
 
@@ -36,25 +24,7 @@ const CheckAuthorization = ({ children }: iProps) => {
 		return <Navigate to="/login" replace />;
 	}
 
-	if (isSuccess) {
-		socket.current = io(`${process.env.REACT_APP_BACKEND}`, {
-			reconnectionDelay: 1000,
-			reconnection: true,
-			reconnectionAttempts: 10,
-			transports: ["websocket"],
-			agent: false,
-			upgrade: false,
-			rejectUnauthorized: false,
-		});
-
-		socket.current.emit("addSocketUser", user?._id);
-
-		socket.current.on("socketUsers", (args) => {
-			console.log(args);
-		});
-
-		return children;
-	}
+	if (isSuccess) return children;
 
 	return <Typography>No Content</Typography>;
 };

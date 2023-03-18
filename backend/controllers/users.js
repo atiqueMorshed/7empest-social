@@ -32,10 +32,7 @@ export const getFollowers = expressAsyncHandler(async (req, res, next) => {
 // @req.params username
 export const getFollowings = expressAsyncHandler(async (req, res, next) => {
 	const { username } = req.params;
-	const user = await User.findOne({ username }, "_id").populate(
-		"followings",
-		"followers",
-	);
+	const user = await User.findOne({ username }).populate("followings");
 	if (!user) return next(new ErrorResponse("No user found.", 404));
 
 	res.status(200).json({ success: true, user });
@@ -168,7 +165,7 @@ export const addRemoveFollowings = expressAsyncHandler(
 			{
 				username: followingUsername,
 			},
-			"username followers followerTotal followerDates",
+			"+followers +followerDates",
 		);
 		if (!followingUser) return next(new ErrorResponse("No user found.", 404));
 
@@ -199,17 +196,17 @@ export const addRemoveFollowings = expressAsyncHandler(
 		// If user is not following followingUser
 		else {
 			// user follows followingUser.
-			user.followings.push(followingUser._id);
+			user.followings.unshift(followingUser._id);
 			user.followingTotal = user.followingTotal + 1;
-			user.followingDates.push({
+			user.followingDates.unshift({
 				_id: followingUser._id,
 				followingFrom: new Date(),
 			});
 
 			// followingUser gains user as new follower
-			followingUser.followers.push(user._id);
+			followingUser.followers.unshift(user._id);
 			followingUser.followerTotal = followingUser.followerTotal + 1;
-			followingUser.followerDates.push({
+			followingUser.followerDates.unshift({
 				_id: user._id,
 				followerFrom: new Date(),
 			});
@@ -230,9 +227,19 @@ export const addRemoveFollowings = expressAsyncHandler(
 				followingTotal: user.followingTotal,
 			},
 			followedUser: {
-				_id: user._id,
+				_id: followingUser._id,
+				firstname: followingUser.firstname,
+				lastname: followingUser.lastname,
+				avatar: followingUser.avatar,
 				username: followingUser.username,
+				email: followingUser.email,
+				isEmailVerified: followingUser.isEmailVerified,
+				location: followingUser.location,
+				occupation: followingUser.occupation,
+				standing: followingUser.standing,
 				followerTotal: followingUser.followerTotal,
+				followingTotal: followingUser.followingTotal,
+				joinDate: followingUser.joinDate,
 			},
 		});
 	},

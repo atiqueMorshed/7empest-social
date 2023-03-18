@@ -10,7 +10,7 @@ export const authUserSchema = yup.object({
 	isEmailVerified: yup.boolean().required(),
 	location: yup.string().required(),
 	occupation: yup.string().required(),
-	standing: yup.string().required(),
+	standing: yup.number().required().positive().integer(),
 	followerTotal: yup.number().required().positive().integer(),
 	followingTotal: yup.number().required().positive().integer(),
 	joinDate: yup.date().required(),

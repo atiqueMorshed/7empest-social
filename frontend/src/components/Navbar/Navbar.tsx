@@ -41,8 +41,6 @@ const Navbar = () => {
 		skip: !isUserLoggedIn,
 	});
 
-	// console.log({ isSuccess, isError, isLoading, data });
-
 	const [anchorElSearch, setAnchorElSearch] =
 		React.useState<null | HTMLElement>(null);
 	const [anchorElNotification, setAnchorElNotification] =

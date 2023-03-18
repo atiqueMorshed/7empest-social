@@ -1,7 +1,45 @@
 import * as yup from "yup";
-import { AuthUserType } from "../auth/auth.types";
+import { AuthUserType, authUserSchema } from "../auth/auth.types";
 
 // Schemas
+export const userWithFollowersSchema = yup.object({
+	success: yup.boolean(),
+	user: yup.object({
+		_id: yup.string(),
+		firstname: yup.string().required(),
+		lastname: yup.string().required(),
+		avatar: yup.string(),
+		username: yup.string().required(),
+		email: yup.string().required(),
+		isEmailVerified: yup.boolean().required(),
+		location: yup.string().required(),
+		occupation: yup.string().required(),
+		standing: yup.number().required().positive().integer(),
+		followerTotal: yup.number().required().positive().integer(),
+		followingTotal: yup.number().required().positive().integer(),
+		joinDate: yup.date().required(),
+		followers: yup.array().of(authUserSchema),
+	}),
+});
+export const userWithFollowingsSchema = yup.object({
+	success: yup.boolean(),
+	user: yup.object({
+		_id: yup.string(),
+		firstname: yup.string().required(),
+		lastname: yup.string().required(),
+		avatar: yup.string(),
+		username: yup.string().required(),
+		email: yup.string().required(),
+		isEmailVerified: yup.boolean().required(),
+		location: yup.string().required(),
+		occupation: yup.string().required(),
+		standing: yup.number().required().positive().integer(),
+		followerTotal: yup.number().required().positive().integer(),
+		followingTotal: yup.number().required().positive().integer(),
+		joinDate: yup.date().required(),
+		followings: yup.array().of(authUserSchema),
+	}),
+});
 export const searchSchema = yup.object({
 	searchTerm: yup.string().required(),
 	page: yup.number(),
@@ -22,9 +60,19 @@ export const addRemoveFollowingsSchema = yup.object({
 		followingTotal: yup.number().required().positive().integer(),
 	}),
 	followedUser: yup.object({
-		_id: yup.string().required(),
+		_id: yup.string(),
+		firstname: yup.string().required(),
+		lastname: yup.string().required(),
+		avatar: yup.string().optional(),
 		username: yup.string().required(),
+		email: yup.string().required(),
+		isEmailVerified: yup.boolean().required(),
+		location: yup.string().required(),
+		occupation: yup.string().required(),
+		standing: yup.number().required().positive().integer(),
 		followerTotal: yup.number().required().positive().integer(),
+		followingTotal: yup.number().required().positive().integer(),
+		joinDate: yup.date().required(),
 	}),
 });
 
@@ -46,6 +94,9 @@ export type FindPeopleType = {
 	users: FindPeopleUserType[];
 	totalUsers: number;
 };
+
+export type UserWithFollowers = yup.InferType<typeof userWithFollowersSchema>;
+export type UserWithFollowings = yup.InferType<typeof userWithFollowingsSchema>;
 
 export type SearchType = yup.InferType<typeof searchSchema>;
 
