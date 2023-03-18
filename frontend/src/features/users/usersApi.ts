@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 import socketOptions from "../../utils/socketOptions";
 import apiSlice from "../api/apiSlice";
+import { AuthUserType } from "../auth/auth.types";
 import {
 	AddRemoveFollowingsType,
 	FindPeopleType,
@@ -25,17 +26,6 @@ const usersApi = apiSlice.injectEndpoints({
 				url: `/users/findpeople/${searchTerm}/${page}`,
 				method: "GET",
 			}),
-			// providesTags: (result, error, args) => {
-			// 	if (result?.users && result?.users?.length > 0) {
-			// 		return [
-			// 			...result.users.map(({ username }) => ({
-			// 				type: "FindUsers" as const,
-			// 				id: username,
-			// 			})),
-			// 			{ type: "FindUsers", id: "USERS" },
-			// 		];
-			// 	} else return [{ type: "FindUsers", id: "USERS" }];
-			// },
 
 			async onQueryStarted({ searchTerm }, { dispatch, queryFulfilled }) {
 				try {
@@ -73,6 +63,45 @@ const usersApi = apiSlice.injectEndpoints({
 				url: `/users/${username}/followers`,
 				method: "GET",
 			}),
+			providesTags: ["GetFollowers"],
+			async onCacheEntryAdded(
+				username,
+				{ cacheDataLoaded, updateCachedData, cacheEntryRemoved },
+			) {
+				if (process.env.REACT_APP_BACKEND) {
+					const socket = io(
+						`http://localhost:4000/follower/${username}`,
+						socketOptions,
+					);
+					try {
+						await cacheDataLoaded;
+						socket.on(
+							"newFollower",
+							(data: { type: string; followedBy: AuthUserType }) => {
+								updateCachedData((draft) => {
+									if (data?.followedBy?._id) {
+										const userAtIndex = draft?.user?.followers?.findIndex(
+											(user) => user._id == data?.followedBy?._id,
+										);
+										if (userAtIndex == -1 && data?.type === "FOLLOW")
+											draft?.user?.followers?.unshift(data?.followedBy);
+										if (
+											typeof userAtIndex === "number" &&
+											userAtIndex >= 0 &&
+											data?.type === "UNFOLLOW"
+										)
+											draft?.user?.followers?.splice(userAtIndex, 1);
+									}
+								});
+							},
+						);
+					} catch (error) {
+						//
+					}
+					await cacheEntryRemoved;
+					socket.close();
+				}
+			},
 		}),
 
 		getFollowings: builder.query<UserWithFollowings, string>({
@@ -82,19 +111,40 @@ const usersApi = apiSlice.injectEndpoints({
 			}),
 			providesTags: ["GetFollowings"],
 			async onCacheEntryAdded(
-				searchTerm,
+				username,
 				{ cacheDataLoaded, updateCachedData, cacheEntryRemoved },
 			) {
-				if (process.env.REACT_APP_API_URL) {
-					const socket = io(process.env.REACT_APP_API_URL, socketOptions);
+				if (process.env.REACT_APP_BACKEND) {
+					const socket = io(
+						`http://localhost:4000/follower/${username}`,
+						socketOptions,
+					);
 					try {
 						await cacheDataLoaded;
-						socket.on("follow", (data) => {
-							console.log(data);
-						});
+						socket.on(
+							"newFollower",
+							(data: { type: string; followedBy: AuthUserType }) => {
+								updateCachedData((draft) => {
+									if (data?.followedBy?._id) {
+										const userAtIndex = draft?.user?.followings?.findIndex(
+											(user) => user._id == data?.followedBy?._id,
+										);
+										if (typeof userAtIndex === "number" && userAtIndex >= 0) {
+											draft?.user?.followings?.splice(
+												userAtIndex,
+												1,
+												data.followedBy,
+											);
+										}
+									}
+								});
+							},
+						);
 					} catch (error) {
 						//
 					}
+					await cacheEntryRemoved;
+					socket.close();
 				}
 			},
 		}),
@@ -107,13 +157,13 @@ const usersApi = apiSlice.injectEndpoints({
 			// Invalidates /auth/getUser, /users/findUsers | findMoreUsers, /users/getFollowStatus
 			invalidatesTags: (result, error, arg) => [
 				{ type: "AuthUser", id: "CURRENT" },
-				// { type: "FindUsers", id: arg },
 				{ type: "FollowStatus", id: arg },
 			],
 			async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
 				try {
 					const result = await queryFulfilled;
 					if (result?.data?.message) {
+						// Update getFollowings endpoint
 						for (const {
 							endpointName,
 							originalArgs,
@@ -147,10 +197,42 @@ const usersApi = apiSlice.injectEndpoints({
 											) {
 												// In the list, so we just replace with new object
 												draft?.user?.followings?.splice(userAtIndex, 1);
-												// userToUpdate.followerTotal =
-												// 	result.data.followedUser.followerTotal;
-												// userToUpdate.followingTotal =
-												// 	result.data.followedUser.followingTotal;
+											}
+										},
+									),
+								);
+							} else {
+								continue;
+							}
+						}
+
+						// Update getFollowers endpoint
+						for (const {
+							endpointName,
+							originalArgs,
+						} of usersApi.util.selectInvalidatedBy(getState(), [
+							// eslint-disable-next-line indent
+							"GetFollowers",
+							// eslint-disable-next-line indent
+						])) {
+							if (endpointName === "getFollowers") {
+								// Update getFollowers Cache
+								dispatch(
+									usersApi.util.updateQueryData(
+										"getFollowers",
+										originalArgs,
+										(draft) => {
+											const userAtIndex = draft?.user?.followers?.findIndex(
+												(user) =>
+													user.username == result.data.followedUser.username,
+											);
+
+											if (typeof userAtIndex === "number" && userAtIndex >= 0) {
+												draft?.user?.followers?.splice(
+													userAtIndex,
+													1,
+													result.data.followedUser,
+												);
 											}
 										},
 									),

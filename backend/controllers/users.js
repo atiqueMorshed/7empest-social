@@ -1,5 +1,8 @@
 import expressAsyncHandler from "express-async-handler";
+import mongoose from "mongoose";
+import Notification from "../models/Notification.js";
 import User from "../models/User.js";
+import { socket_users } from "../server.js";
 import ErrorResponse from "../utils/ErrorResponse.js";
 
 // @access Public
@@ -155,17 +158,14 @@ export const addRemoveFollowings = expressAsyncHandler(
 			new ErrorResponse("Auth Error: Access Denied.", 403);
 		}
 
-		const user = await User.findById(
-			req.userId,
-			"followings followingTotal followingDates",
-		);
+		const user = await User.findById(req.userId, "+followings +followingDates");
 		if (!user) return next(new ErrorResponse("No user found.", 404));
 
 		const followingUser = await User.findOne(
 			{
 				username: followingUsername,
 			},
-			"+followers +followerDates",
+			"+followers +followerDates +notifications",
 		);
 		if (!followingUser) return next(new ErrorResponse("No user found.", 404));
 
@@ -210,7 +210,58 @@ export const addRemoveFollowings = expressAsyncHandler(
 				_id: user._id,
 				followerFrom: new Date(),
 			});
+
+			// Adds to followingUser's notifications.
+			const newNotification = await Notification.create({
+				_id: mongoose.Types.ObjectId(),
+				firstname: followingUser.firstname,
+				lastname: followingUser.lastname,
+				username: followingUser.username,
+				avatar: followingUser.avatar,
+				message: "_FOLLOW_",
+			});
+
+			// Add the notification ID to followingUser notifications.
+			console.log("notificationID: ", newNotification._id);
+			if (newNotification?._id) {
+				followingUser.notifications.unshift(newNotification._id);
+				if (followingUser.notifications.length >= 10) {
+					const deleteNotificationId = followingUser.notifications[10];
+					await Notification.deleteOne({ _id: deleteNotificationId });
+					followingUser.notifications = followingUser.notifications.slice(
+						0,
+						10,
+					);
+				}
+			}
 		}
+
+		// Send realtime update to  the followingUser
+		if (socket_users[followingUser._id.toString()]) {
+			const followedBy = {
+				_id: user._id,
+				firstname: user.firstname,
+				lastname: user.lastname,
+				avatar: user.avatar,
+				username: user.username,
+				email: user.email,
+				isEmailVerified: user.isEmailVerified,
+				location: user.location,
+				occupation: user.occupation,
+				standing: user.standing,
+				followerTotal: user.followerTotal,
+				followingTotal: user.followingTotal,
+				joinDate: user.joinDate,
+			};
+			// Socket sends notification to followingUser with the new follower information.
+			// A dynamic namespace is used to send to the only
+			req.io.of(`/follower/${followingUser.username}`).emit("newFollower", {
+				type: isFollowing ? "UNFOLLOW" : "FOLLOW",
+				followedBy,
+			});
+			// Initially isFollowing = true means, already followed, so now the task is to unfollow.
+		}
+
 		await user.save();
 		await followingUser.save();
 

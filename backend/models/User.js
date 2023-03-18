@@ -105,6 +105,10 @@ const UserSchema = mongoose.Schema({
 		type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 		select: false,
 	},
+	notifications: {
+		type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Notification" }],
+		select: false,
+	},
 	followingDates: {
 		type: [
 			{
