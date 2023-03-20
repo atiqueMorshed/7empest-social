@@ -19,6 +19,7 @@ import {
 	useAddRemoveFollowingsMutation,
 	useGetFollowStatusQuery,
 } from "../../../features/users/usersApi";
+import { lineClamp1 } from "../../../globalStyles";
 import { getErrorMessage } from "../../../utils/getErrorMessage";
 
 type iProps = {
@@ -126,7 +127,7 @@ const PersonCard = ({
 						onClick={() => setSearchTerm && setSearchTerm("")}
 						to={`/${username}`}
 					>
-						<Typography sx={{ pl: 1 }}>
+						<Typography sx={{ pl: 1, ...lineClamp1 }}>
 							{fullname.length > 16 ? fullname.slice(0, 11) + ".." : fullname}
 						</Typography>
 					</Link>
@@ -141,6 +142,7 @@ const PersonCard = ({
 								fontWeight: 700,
 								color: "primary.light",
 								pl: 1,
+								...lineClamp1,
 							}}
 						>
 							@{username}

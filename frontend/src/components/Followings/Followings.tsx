@@ -35,23 +35,12 @@ const Followings = ({ username }: iProps) => {
 		else setHeight("612px");
 	}, [isBelowLG]);
 
-	let content;
-
 	useEffect(() => {
 		if (page > 0)
 			dispatch(
 				usersApi.endpoints.getMoreFollowings.initiate({ username, page }),
 			);
 	}, [dispatch, page, username]);
-
-	// useEffect(() => {
-	// 	if (!isSuccess) setHeight("80px");
-
-	// 	if (data?.totalUsers && data.totalUsers > 0) {
-	// 		if (data.totalUsers >= 5) setHeight("437px");
-	// 		else setHeight(`${146 * data.totalUsers}px`);
-	// 	}
-	// }, [data, isSuccess]);
 
 	useEffect(() => {
 		let lim;
@@ -77,6 +66,8 @@ const Followings = ({ username }: iProps) => {
 	const fetchMore = () => {
 		if (hasMore) setPage((prev) => prev + 1);
 	};
+
+	let content;
 
 	if (isLoading) {
 		content = (

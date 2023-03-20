@@ -80,7 +80,11 @@ const usersApi = apiSlice.injectEndpoints({
 						await cacheDataLoaded;
 						socket.on(
 							"newFollower",
-							(data: { type: string; followedBy: AuthUserType }) => {
+							(data: {
+								type: string;
+								followedBy: AuthUserType;
+								totalFollowers: number;
+							}) => {
 								updateCachedData((draft) => {
 									if (data?.followedBy?._id) {
 										const userAtIndex = draft?.user?.followers?.findIndex(
@@ -88,12 +92,14 @@ const usersApi = apiSlice.injectEndpoints({
 										);
 										if (userAtIndex == -1 && data?.type === "FOLLOW")
 											draft?.user?.followers?.unshift(data?.followedBy);
+										draft.totalFollowers = data.totalFollowers;
 										if (
 											typeof userAtIndex === "number" &&
 											userAtIndex >= 0 &&
 											data?.type === "UNFOLLOW"
 										)
 											draft?.user?.followers?.splice(userAtIndex, 1);
+										draft.totalFollowers = data.totalFollowers;
 									}
 								});
 							},
@@ -103,6 +109,53 @@ const usersApi = apiSlice.injectEndpoints({
 					}
 					await cacheEntryRemoved;
 					socket.close();
+				}
+			},
+		}),
+
+		getMoreFollowers: builder.query<
+			UserWithFollowers,
+			{ username: string; page: number }
+		>({
+			query: ({ username, page }) => ({
+				url: `/users/${username}/followers/${page}`,
+				method: "GET",
+			}),
+
+			async onQueryStarted({ username }, { dispatch, queryFulfilled }) {
+				try {
+					const result = await queryFulfilled;
+					// Pessimistic cache update
+
+					if (
+						result?.data?.user?.followers &&
+						result.data.user.followers?.length > 0
+					) {
+						dispatch(
+							usersApi.util.updateQueryData(
+								"getFollowers",
+								username,
+								(draft) => {
+									if (
+										draft?.user?.followers &&
+										draft.user.followers?.length > 0 &&
+										result?.data?.user?.followers &&
+										result.data.user.followers?.length > 0
+									) {
+										draft.user.followers = [
+											...draft.user.followers,
+											...result.data.user.followers,
+										];
+										draft.totalFollowers = result.data.totalFollowers;
+										console.log(draft.totalFollowers);
+										console.log(draft.user.followers.length);
+									}
+								},
+							),
+						);
+					}
+				} catch (error) {
+					// console.log(error);
 				}
 			},
 		}),

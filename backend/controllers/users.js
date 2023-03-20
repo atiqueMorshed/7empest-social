@@ -211,6 +211,7 @@ export const getFollowStatus = expressAsyncHandler(async (req, res, next) => {
 // @desc Add or remove follower -> user folows followingUser
 // @route /api/users/:followingUsername/follow-unfollow POST
 // @req.params followingUsername
+// @req.userId user ObjectId
 export const addRemoveFollowings = expressAsyncHandler(
 	async (req, res, next) => {
 		const { followingUsername } = req.params;
