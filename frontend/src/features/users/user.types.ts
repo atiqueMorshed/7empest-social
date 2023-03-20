@@ -40,6 +40,28 @@ export const userWithFollowingsSchema = yup.object({
 		followings: yup.array().of(authUserSchema),
 	}),
 });
+
+export const notificationsSchema = yup.object({
+	_id: yup.string().required(),
+	toUserUsername: yup.string().required(),
+	firstname: yup.string().required(),
+	lastname: yup.string().required(),
+	avatar: yup.string().required(),
+	username: yup.string().required(),
+	message: yup.string().required(),
+	date: yup.date().required(),
+	seen: yup.boolean().required(),
+});
+
+export const userWithNotificationsSchema = yup.object({
+	success: yup.boolean(),
+	user: yup.object({
+		_id: yup.string(),
+		username: yup.string().required(),
+		notifications: yup.array().of(notificationsSchema),
+	}),
+});
+
 export const searchSchema = yup.object({
 	searchTerm: yup.string().required(),
 	page: yup.number(),
@@ -97,6 +119,10 @@ export type FindPeopleType = {
 
 export type UserWithFollowers = yup.InferType<typeof userWithFollowersSchema>;
 export type UserWithFollowings = yup.InferType<typeof userWithFollowingsSchema>;
+export type NotificationType = yup.InferType<typeof notificationsSchema>;
+export type UserWithNotifications = yup.InferType<
+	typeof userWithNotificationsSchema
+>;
 
 export type SearchType = yup.InferType<typeof searchSchema>;
 

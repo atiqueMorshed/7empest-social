@@ -44,8 +44,15 @@ const Followings = ({ username }: iProps) => {
 					pl: 2,
 				}}
 			>
-				{data.user.followings.map((fUser) => (
-					<PersonCard key={fUser?._id} user={fUser} fromConnection={true} />
+				{data.user.followings.map((fUser, idx) => (
+					<PersonCard
+						key={fUser?._id}
+						user={fUser}
+						fromConnection={true}
+						isLastIndex={
+							data?.user?.followings && data.user.followings.length - 1 === idx
+						}
+					/>
 				))}
 			</Box>
 		);

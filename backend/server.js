@@ -55,31 +55,18 @@ export const io = new Server(server, {
 	cors: corsOptions,
 });
 
-// Set up Socket.IO namespaces
-const connectStatusNamespace = io.of("/connect-status");
+// // Set online user with socket namespace
+// const connectStatusNamespace = io.of("/connect-status");
 
-connectStatusNamespace.on("connection", (socket) => {
-	console.log("connected to the set online namespace.");
-	socket.on("online", (userId) => {
-		socket_users[userId] = socket.id;
-		console.log("C");
-		console.log(socket_users);
-	});
-	socket.on("offline", (userId) => {
-		console.log("disconnected from the set online namespace.");
-		delete socket_users[userId];
-	});
-});
-
-// const followerNamespace = io.of("/follower");
-
-// followerNamespace.on("connection", (socket) => {
-// 	console.log("A new client connected to the set online namespace.");
+// connectStatusNamespace.on("connection", (socket) => {
+// 	console.log("connected to the set online namespace.");
 // 	socket.on("online", (userId) => {
 // 		socket_users[userId] = socket.id;
+// 		console.log("C");
+// 		console.log(socket_users);
 // 	});
 // 	socket.on("offline", (userId) => {
-// 		console.log("A client disconnected from the set online namespace.");
+// 		console.log("disconnected from the set online namespace.");
 // 		delete socket_users[userId];
 // 	});
 // });
@@ -90,11 +77,6 @@ app.use((req, res, next) => {
 	req.io = io;
 	next();
 });
-
-// eslint-disable-next-line no-unused-vars
-// io.on("connection", function (socket) {
-// 	console.log("socket.io connection made");
-// });
 
 // Routes
 app.get("/", (req, res) => {

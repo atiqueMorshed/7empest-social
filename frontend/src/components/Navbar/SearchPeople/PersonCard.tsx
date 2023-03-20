@@ -25,6 +25,7 @@ type iProps = {
 	user: FindPeopleUserType;
 	setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
 	fromConnection?: boolean;
+	isLastIndex?: boolean;
 };
 
 const PersonCard = ({
@@ -37,6 +38,7 @@ const PersonCard = ({
 		followingTotal,
 	},
 	setSearchTerm,
+	isLastIndex,
 }: iProps) => {
 	const [open, setOpen] = useState(false);
 
@@ -162,7 +164,10 @@ const PersonCard = ({
 									alignItems: "center",
 								}}
 							>
-								<IconButton onClick={() => addRemoveFollowings(username)}>
+								<IconButton
+									onClick={() => addRemoveFollowings(username)}
+									sx={{ borderRadius: "5px" }}
+								>
 									<BookmarkAddOutlinedIcon
 										sx={{
 											height: 16,
@@ -186,7 +191,13 @@ const PersonCard = ({
 									alignItems: "center",
 								}}
 							>
-								<IconButton>
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: "center",
+										alignItems: "center",
+									}}
+								>
 									<BookmarkAddedOutlinedIcon
 										sx={{
 											height: 16,
@@ -200,13 +211,13 @@ const PersonCard = ({
 									<Typography sx={{ fontSize: 16 }}>
 										{followingTotal}
 									</Typography>
-								</IconButton>
+								</Box>
 							</Box>
 						</Tooltip>
 					</Box>
 				</Box>
 			</Box>
-			<Divider sx={{ width: "100%" }} />
+			{!isLastIndex && <Divider sx={{ width: "100%" }} />}
 			{isSuccess && (
 				<Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
 					<Alert

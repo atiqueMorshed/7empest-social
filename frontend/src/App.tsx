@@ -1,7 +1,7 @@
 import { Box, CssBaseline } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useEffect, useMemo, useRef } from "react";
-import { Toaster } from "react-hot-toast";
+
 import { Route, Routes } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useAppSelector } from "./app/hooks";
@@ -48,19 +48,6 @@ const App = () => {
 					color: "text.primary",
 				}}
 			>
-				<Toaster
-					position="top-center"
-					reverseOrder={false}
-					toastOptions={{
-						// Define default options
-						duration: 5000,
-						style: {
-							borderRadius: "5px",
-							background: "#333",
-							color: "#fff",
-						},
-					}}
-				/>
 				<Navbar />
 				<Routes>
 					<Route path="/login" element={<LoginPage />} />

@@ -1,10 +1,4 @@
-import {
-	DarkMode,
-	LightMode,
-	Login,
-	Notifications,
-	Search,
-} from "@mui/icons-material";
+import { DarkMode, LightMode, Login, Search } from "@mui/icons-material";
 import { Link, Stack, useMediaQuery, useTheme } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Avatar from "@mui/material/Avatar";
@@ -15,20 +9,25 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
-import { toast } from "react-hot-toast";
 import { Link as RouterLink } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { useGetUserQuery } from "../../features/auth/authApi";
 import { selectIsUserLoggedIn } from "../../features/auth/authSlice";
 import { selectThemeMode, setMode } from "../../features/theme/themeSlice";
-import { getErrorMessage } from "../../utils/getErrorMessage";
-import NotificationMenu from "./NotificationMenu";
+import LoadingPage from "../LoadingPage/LoadingPage";
+import NotificationsButton from "./Notifications/NotificationsButton";
 import SearchMobileMenu from "./SearchMenuMobile";
 import SearchPeople from "./SearchPeople/SearchPeople";
 import UserMenu from "./UserMenu";
 
 // const pages = ["Profile", "Followers", "Blog"];
 const Navbar = () => {
+	const [anchorElSearch, setAnchorElSearch] =
+		React.useState<null | HTMLElement>(null);
+	const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
+		null,
+	);
+
 	const dispatch = useAppDispatch();
 	const mode = useAppSelector(selectThemeMode);
 
@@ -36,24 +35,13 @@ const Navbar = () => {
 	const isBelowSm = useMediaQuery(theme.breakpoints.down("sm"));
 
 	const isUserLoggedIn = useAppSelector(selectIsUserLoggedIn);
-	const { isSuccess, isError, data, error } = useGetUserQuery("getUser", {
+	const { isSuccess, isLoading, data } = useGetUserQuery("getUser", {
 		// pollingInterval: 30000,
 		skip: !isUserLoggedIn,
 	});
 
-	const [anchorElSearch, setAnchorElSearch] =
-		React.useState<null | HTMLElement>(null);
-	const [anchorElNotification, setAnchorElNotification] =
-		React.useState<null | HTMLElement>(null);
-	const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
-		null,
-	);
-
 	const handleOpenSearchMenu = (event: React.MouseEvent<HTMLElement>) => {
 		setAnchorElSearch(event.currentTarget);
-	};
-	const handleOpenNotificationMenu = (event: React.MouseEvent<HTMLElement>) => {
-		setAnchorElNotification(event.currentTarget);
 	};
 	const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
 		setAnchorElUser(event.currentTarget);
@@ -62,22 +50,11 @@ const Navbar = () => {
 	const handleCloseSearchMenu = () => {
 		setAnchorElSearch(null);
 	};
-	const handleCloseNotificationMenu = () => {
-		setAnchorElNotification(null);
-	};
 	const handleCloseUserMenu = () => {
 		setAnchorElUser(null);
 	};
 
-	if (isError && isUserLoggedIn) {
-		let errMsg = getErrorMessage(error);
-
-		if (errMsg.startsWith("Auth Error"))
-			errMsg = "Authorization failed, you have been logged out.";
-		else errMsg = "Internal server error.";
-
-		toast(errMsg);
-	}
+	if (isLoading) return <LoadingPage />;
 
 	return (
 		<AppBar
@@ -177,31 +154,7 @@ const Navbar = () => {
 						{isSuccess && (
 							<>
 								{/* Notification Menu Icon */}
-								<Tooltip title="Recent Notifications">
-									<IconButton
-										size="small"
-										aria-label="Notifications menu Items"
-										aria-controls="menu-appbar-notification"
-										aria-haspopup="true"
-										onClick={handleOpenNotificationMenu}
-										color="inherit"
-										sx={{
-											color: "text.primary",
-											backgroundColor: "background.offset2",
-											p: 1,
-											mr: 1,
-											borderRadius: 1,
-										}}
-									>
-										<Notifications
-											sx={{
-												height: { xs: "18px", sm: "24px" },
-												width: { xs: "18px", sm: "24px" },
-											}}
-										/>
-									</IconButton>
-								</Tooltip>
-
+								<NotificationsButton username={data.user.username} />
 								{/* Mobile Search Menu Icon */}
 								<Tooltip title="Search for people">
 									<IconButton
@@ -314,13 +267,6 @@ const Navbar = () => {
 							</>
 						)}
 
-						{/* Notification Menu Dropdown */}
-						{isSuccess && (
-							<NotificationMenu
-								anchorElNotification={anchorElNotification}
-								handleCloseNotificationMenu={handleCloseNotificationMenu}
-							/>
-						)}
 						{/* Search Menu Dropdown */}
 						{isSuccess && isBelowSm && (
 							<Box

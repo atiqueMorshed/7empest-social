@@ -2,7 +2,6 @@ import expressAsyncHandler from "express-async-handler";
 import mongoose from "mongoose";
 import Notification from "../models/Notification.js";
 import User from "../models/User.js";
-import { socket_users } from "../server.js";
 import ErrorResponse from "../utils/ErrorResponse.js";
 
 // @access Public
@@ -214,15 +213,15 @@ export const addRemoveFollowings = expressAsyncHandler(
 			// Adds to followingUser's notifications.
 			const newNotification = await Notification.create({
 				_id: mongoose.Types.ObjectId(),
-				firstname: followingUser.firstname,
-				lastname: followingUser.lastname,
-				username: followingUser.username,
-				avatar: followingUser.avatar,
+				toUserUsername: followingUser.username,
+				firstname: user.firstname,
+				lastname: user.lastname,
+				username: user.username,
+				avatar: user.avatar,
 				message: "_FOLLOW_",
 			});
 
 			// Add the notification ID to followingUser notifications.
-			console.log("notificationID: ", newNotification._id);
 			if (newNotification?._id) {
 				followingUser.notifications.unshift(newNotification._id);
 				if (followingUser.notifications.length >= 10) {
@@ -234,33 +233,33 @@ export const addRemoveFollowings = expressAsyncHandler(
 					);
 				}
 			}
+			req.io
+				.of(`/notifications/${followingUser.username}`)
+				.emit("newNotification", newNotification);
 		}
 
-		// Send realtime update to  the followingUser
-		if (socket_users[followingUser._id.toString()]) {
-			const followedBy = {
-				_id: user._id,
-				firstname: user.firstname,
-				lastname: user.lastname,
-				avatar: user.avatar,
-				username: user.username,
-				email: user.email,
-				isEmailVerified: user.isEmailVerified,
-				location: user.location,
-				occupation: user.occupation,
-				standing: user.standing,
-				followerTotal: user.followerTotal,
-				followingTotal: user.followingTotal,
-				joinDate: user.joinDate,
-			};
-			// Socket sends notification to followingUser with the new follower information.
-			// A dynamic namespace is used to send to the only
-			req.io.of(`/follower/${followingUser.username}`).emit("newFollower", {
-				type: isFollowing ? "UNFOLLOW" : "FOLLOW",
-				followedBy,
-			});
-			// Initially isFollowing = true means, already followed, so now the task is to unfollow.
-		}
+		// Send realtime update to the followingUser
+		const followedBy = {
+			_id: user._id,
+			firstname: user.firstname,
+			lastname: user.lastname,
+			avatar: user.avatar,
+			username: user.username,
+			email: user.email,
+			isEmailVerified: user.isEmailVerified,
+			location: user.location,
+			occupation: user.occupation,
+			standing: user.standing,
+			followerTotal: user.followerTotal,
+			followingTotal: user.followingTotal,
+			joinDate: user.joinDate,
+		};
+		// Socket to followingUser with the new follower information.
+		// A dynamic namespace is used to send to the only
+		req.io.of(`/follower/${followingUser.username}`).emit("newFollower", {
+			type: isFollowing ? "UNFOLLOW" : "FOLLOW",
+			followedBy,
+		});
 
 		await user.save();
 		await followingUser.save();
@@ -293,5 +292,41 @@ export const addRemoveFollowings = expressAsyncHandler(
 				joinDate: followingUser.joinDate,
 			},
 		});
+	},
+);
+
+// @access Private
+// @desc Get notifications of the logged in user
+// @route /api/users/:username/notifications GET
+// @req.params username
+export const getNotifications = expressAsyncHandler(async (req, res, next) => {
+	const { username } = req.params;
+	if (!username) next(new ErrorResponse("Username is not valid.", 406));
+
+	const userWithNotifications = await User.findOne(
+		{ username },
+		"username notifications",
+	).populate("notifications");
+	if (!userWithNotifications) return next(new ErrorResponse("Not found.", 404));
+
+	res.status(200).json({ success: true, user: userWithNotifications });
+});
+
+// @access Private
+// @desc Set notifications to seen for the logged in user
+// @route /api/users/:username/notifications GET
+// @req.params username
+export const setNotificationsToSeen = expressAsyncHandler(
+	// eslint-disable-next-line no-unused-vars
+	async (req, res, next) => {
+		const { username } = req.params;
+
+		const updateNotifications = await Notification.updateMany(
+			{ toUserUsername: username },
+			{ seen: true },
+		);
+		console.log(updateNotifications);
+
+		res.status(200).json({ success: true });
 	},
 );

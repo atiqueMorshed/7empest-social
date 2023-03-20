@@ -7,7 +7,6 @@ import {
 	Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-// import InfiniteScroll from "react-infinite-scroller";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useAppDispatch } from "../../../app/hooks";
 import usersApi, { useFindUsersQuery } from "../../../features/users/usersApi";
@@ -120,12 +119,6 @@ const SearchPeopleMenu = ({ searchTerm, setSearchTerm }: iProps) => {
 				)}
 				{isLoading && <CircularProgress sx={{ color: "primary.light" }} />}
 				{isSuccess && (
-					// <Scrollbars
-					// 	autoHide
-					// 	autoHideTimeout={2000}
-					// 	autoHeight
-					// 	autoHeightMax="50vh"
-					// >
 					<InfiniteScroll
 						dataLength={data?.users?.length || 0}
 						next={fetchMore}
@@ -163,7 +156,6 @@ const SearchPeopleMenu = ({ searchTerm, setSearchTerm }: iProps) => {
 							))}
 						</Box>
 					</InfiniteScroll>
-					// </Scrollbars>
 				)}
 			</Box>
 		</Box>

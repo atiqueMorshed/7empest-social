@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const notificationSchema = mongoose.Schema({
 	_id: mongoose.Schema.Types.ObjectId,
+	toUserUsername: String,
 	firstname: String,
 	lastname: String,
 	username: String,
@@ -10,6 +11,10 @@ const notificationSchema = mongoose.Schema({
 	date: {
 		type: Date,
 		default: new Date(),
+	},
+	seen: {
+		type: Boolean,
+		default: false,
 	},
 });
 

@@ -6,9 +6,11 @@ import {
 	AddRemoveFollowingsType,
 	FindPeopleType,
 	FollowStatusType,
+	NotificationType,
 	SearchType,
 	UserWithFollowers,
 	UserWithFollowings,
+	UserWithNotifications,
 } from "./user.types";
 
 const usersApi = apiSlice.injectEndpoints({
@@ -275,6 +277,72 @@ const usersApi = apiSlice.injectEndpoints({
 				}
 			},
 		}),
+
+		getNotifications: builder.query<UserWithNotifications, string>({
+			query: (username) => ({
+				url: `/users/${username}/notifications`,
+				method: "GET",
+			}),
+			providesTags: ["GetNotifications"],
+			async onCacheEntryAdded(
+				username,
+				{ cacheDataLoaded, updateCachedData, cacheEntryRemoved },
+			) {
+				if (process.env.REACT_APP_BACKEND) {
+					const socket = io(
+						`http://localhost:4000/notifications/${username}`,
+						socketOptions,
+					);
+					try {
+						await cacheDataLoaded;
+						socket.on("newNotification", (data: NotificationType) => {
+							updateCachedData((draft) => {
+								if (data?._id) {
+									draft?.user?.notifications?.unshift(data);
+								}
+							});
+						});
+					} catch (error) {
+						//
+					}
+					await cacheEntryRemoved;
+					socket.close();
+				}
+			},
+		}),
+
+		setNotificationsSeen: builder.mutation<{ success: boolean }, string>({
+			query: (username) => ({
+				url: `/users/${username}/notifications`,
+				method: "POST",
+			}),
+			async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+				try {
+					const result = await queryFulfilled;
+					if (result?.data?.success === true) {
+						// Update getNotifications data
+						dispatch(
+							usersApi.util.updateQueryData(
+								"getNotifications",
+								arg,
+								(draft) => {
+									if (
+										draft?.user?.notifications &&
+										draft.user.notifications?.length > 0
+									) {
+										draft.user.notifications.map((notification) => {
+											notification.seen = true;
+										});
+									}
+								},
+							),
+						);
+					}
+				} catch (error) {
+					//
+				}
+			},
+		}),
 	}),
 });
 
@@ -284,6 +352,8 @@ export const {
 	useAddRemoveFollowingsMutation,
 	useGetFollowingsQuery,
 	useGetFollowersQuery,
+	useGetNotificationsQuery,
+	useSetNotificationsSeenMutation,
 } = usersApi;
 
 export default usersApi;
