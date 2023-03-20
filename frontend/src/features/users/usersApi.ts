@@ -40,6 +40,7 @@ const usersApi = apiSlice.injectEndpoints({
 								searchTerm,
 								(draft) => {
 									draft.users = [...draft.users, ...newUsersResult.data.users];
+									draft.totalUsers = newUsersResult.data.totalUsers;
 								},
 							),
 						);
@@ -62,7 +63,7 @@ const usersApi = apiSlice.injectEndpoints({
 
 		getFollowers: builder.query<UserWithFollowers, string>({
 			query: (username) => ({
-				url: `/users/${username}/followers`,
+				url: `/users/${username}/followers/0`,
 				method: "GET",
 			}),
 			providesTags: ["GetFollowers"],
@@ -108,7 +109,7 @@ const usersApi = apiSlice.injectEndpoints({
 
 		getFollowings: builder.query<UserWithFollowings, string>({
 			query: (username) => ({
-				url: `/users/${username}/followings`,
+				url: `/users/${username}/followings/0`,
 				method: "GET",
 			}),
 			providesTags: ["GetFollowings"],
@@ -125,7 +126,11 @@ const usersApi = apiSlice.injectEndpoints({
 						await cacheDataLoaded;
 						socket.on(
 							"newFollower",
-							(data: { type: string; followedBy: AuthUserType }) => {
+							(data: {
+								type: string;
+								followedBy: AuthUserType;
+								totalFollowers: number;
+							}) => {
 								updateCachedData((draft) => {
 									if (data?.followedBy?._id) {
 										const userAtIndex = draft?.user?.followings?.findIndex(
@@ -147,6 +152,50 @@ const usersApi = apiSlice.injectEndpoints({
 					}
 					await cacheEntryRemoved;
 					socket.close();
+				}
+			},
+		}),
+
+		getMoreFollowings: builder.query<
+			UserWithFollowings,
+			{ username: string; page: number }
+		>({
+			query: ({ username, page }) => ({
+				url: `/users/${username}/followings/${page}`,
+				method: "GET",
+			}),
+
+			async onQueryStarted({ username }, { dispatch, queryFulfilled }) {
+				try {
+					const result = await queryFulfilled;
+					// Pessimistic cache update
+					if (
+						result?.data?.user?.followings &&
+						result.data.user.followings?.length > 0
+					) {
+						dispatch(
+							usersApi.util.updateQueryData(
+								"getFollowings",
+								username,
+								(draft) => {
+									if (
+										draft?.user?.followings &&
+										draft.user.followings?.length > 0 &&
+										result?.data?.user?.followings &&
+										result.data.user.followings?.length > 0
+									) {
+										draft.user.followings = [
+											...draft.user.followings,
+											...result.data.user.followings,
+										];
+										draft.totalFollowings = result.data.totalFollowings;
+									}
+								},
+							),
+						);
+					}
+				} catch (error) {
+					// console.log(error);
 				}
 			},
 		}),

@@ -79,7 +79,7 @@ const Followers = ({ username }: iProps) => {
 		<Box
 			sx={{
 				mt: "1rem",
-				height: "70vh",
+				// height: "70vh",
 				overflowY: "auto",
 				overflowX: "hidden",
 			}}

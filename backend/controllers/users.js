@@ -18,26 +18,87 @@ export const getUser = expressAsyncHandler(async (req, res, next) => {
 
 // @access Public
 // @desc Get Followers of specified user
-// @route /api/users/:username/followers GET
-// @req.params username
+// @route /api/users/:username/followers/:page GET
+// @req.params username, page=0
 export const getFollowers = expressAsyncHandler(async (req, res, next) => {
-	const { username } = req.params;
-	const user = await User.findOne({ username }).populate("followers");
+	const { username, page } = req.params;
+
+	if (!username)
+		return res
+			.status(404)
+			.json({ success: false, message: "Username not found." });
+
+	let currPage = 0;
+	try {
+		currPage = parseInt(page);
+	} catch (err) {
+		currPage = 0;
+	}
+
+	let limit = 10;
+	try {
+		limit = parseInt(process.env.FOLLOWERS_FOLLOWINGS_LIMIT_PER_PAGE);
+	} catch (error) {
+		limit = 10;
+	}
+
+	const user = await User.findOne({ username }).populate({
+		path: "followers",
+		options: {
+			limit,
+			skip: currPage * limit,
+		},
+	});
 	if (!user) return next(new ErrorResponse("No user found.", 404));
 
-	res.status(200).json({ success: true, user });
+	const userWithAllFollowersRef = await User.findOne({ username }, "followers");
+	const totalFollowers = userWithAllFollowersRef.followers?.length || 0;
+
+	res.status(200).json({ success: true, user, totalFollowers });
 });
 
 // @access Public
 // @desc Get Followings of specified user
-// @route /api/users/:username/followings GET
-// @req.params username
+// @route /api/users/:username/followings/:page GET
+// @req.params username, page=0
 export const getFollowings = expressAsyncHandler(async (req, res, next) => {
-	const { username } = req.params;
-	const user = await User.findOne({ username }).populate("followings");
+	const { username, page } = req.params;
+
+	if (!username)
+		return res
+			.status(404)
+			.json({ success: false, message: "Username not found." });
+
+	let currPage = 0;
+	try {
+		currPage = parseInt(page);
+	} catch (err) {
+		currPage = 0;
+	}
+
+	let limit = 10;
+	try {
+		limit = parseInt(process.env.FOLLOWERS_FOLLOWINGS_LIMIT_PER_PAGE);
+	} catch (error) {
+		limit = 10;
+	}
+
+	const user = await User.findOne({ username }).populate({
+		path: "followings",
+		options: {
+			limit,
+			skip: currPage * limit,
+		},
+	});
 	if (!user) return next(new ErrorResponse("No user found.", 404));
 
-	res.status(200).json({ success: true, user });
+	const userWithAllFollowingsRef = await User.findOne(
+		{ username },
+		"followings",
+	);
+	const totalFollowings = userWithAllFollowingsRef.followings?.length || 0;
+
+	res.status(200).json({ success: true, user, totalFollowings });
 });
 
 // @access Private
@@ -147,7 +208,7 @@ export const getFollowStatus = expressAsyncHandler(async (req, res, next) => {
 });
 
 // @access Public
-// @desc Add or remove follower
+// @desc Add or remove follower -> user folows followingUser
 // @route /api/users/:followingUsername/follow-unfollow POST
 // @req.params followingUsername
 export const addRemoveFollowings = expressAsyncHandler(
@@ -168,13 +229,19 @@ export const addRemoveFollowings = expressAsyncHandler(
 		);
 		if (!followingUser) return next(new ErrorResponse("No user found.", 404));
 
+		let totalFollowers = followingUser.followers?.length || 0;
+
 		const isFollowing = user.followings?.find((_id) =>
 			_id.equals(followingUser._id),
 		);
 
 		// If user is following followingUser
 		if (isFollowing) {
-			// user stops following followingUser
+			// user stops following followingUser (followingUser loses a follower)
+			if (totalFollowers > 0) {
+				totalFollowers = totalFollowers - 1;
+			}
+
 			user.followings = user.followings.filter(
 				(_id) => !_id.equals(followingUser._id),
 			);
@@ -194,7 +261,9 @@ export const addRemoveFollowings = expressAsyncHandler(
 		}
 		// If user is not following followingUser
 		else {
-			// user follows followingUser.
+			// user follows followingUser. (followingUser gains a follower)
+			totalFollowers = totalFollowers + 1;
+
 			user.followings.unshift(followingUser._id);
 			user.followingTotal = user.followingTotal + 1;
 			user.followingDates.unshift({
@@ -259,6 +328,7 @@ export const addRemoveFollowings = expressAsyncHandler(
 		req.io.of(`/follower/${followingUser.username}`).emit("newFollower", {
 			type: isFollowing ? "UNFOLLOW" : "FOLLOW",
 			followedBy,
+			totalFollowers,
 		});
 
 		await user.save();
@@ -321,11 +391,7 @@ export const setNotificationsToSeen = expressAsyncHandler(
 	async (req, res, next) => {
 		const { username } = req.params;
 
-		const updateNotifications = await Notification.updateMany(
-			{ toUserUsername: username },
-			{ seen: true },
-		);
-		console.log(updateNotifications);
+		await Notification.updateMany({ toUserUsername: username }, { seen: true });
 
 		res.status(200).json({ success: true });
 	},

@@ -14,8 +14,8 @@ import verifyJWT from "../middleware/verifyJWT.js";
 const router = express.Router();
 
 router.route("/:username").get(verifyJWT, getUser);
-router.route("/:username/followers").get(verifyJWT, getFollowers);
-router.route("/:username/followings").get(verifyJWT, getFollowings);
+router.route("/:username/followers/:page").get(verifyJWT, getFollowers);
+router.route("/:username/followings/:page").get(verifyJWT, getFollowings);
 router
 	.route("/:username/notifications")
 	.get(getNotifications)

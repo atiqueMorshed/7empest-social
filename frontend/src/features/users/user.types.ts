@@ -20,6 +20,7 @@ export const userWithFollowersSchema = yup.object({
 		joinDate: yup.date().required(),
 		followers: yup.array().of(authUserSchema),
 	}),
+	totalFollowers: yup.number().required().positive().integer(),
 });
 export const userWithFollowingsSchema = yup.object({
 	success: yup.boolean(),
@@ -39,6 +40,7 @@ export const userWithFollowingsSchema = yup.object({
 		joinDate: yup.date().required(),
 		followings: yup.array().of(authUserSchema),
 	}),
+	totalFollowings: yup.number().required().positive().integer(),
 });
 
 export const notificationsSchema = yup.object({
