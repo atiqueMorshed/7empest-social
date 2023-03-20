@@ -69,7 +69,7 @@ const SearchPeopleMenu = ({ searchTerm, setSearchTerm }: iProps) => {
 	return (
 		<Box
 			sx={{
-				backgroundColor: "background.offset2",
+				backgroundColor: "background.paper",
 				borderRadius: 1,
 				my: 1,
 				mx: 2,

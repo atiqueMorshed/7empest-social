@@ -1,10 +1,7 @@
-import { Box, useMediaQuery, useTheme } from "@mui/material";
+import { Box } from "@mui/material";
 import Connections from "../../components/Connections/Connections";
 
 const HomePage = () => {
-	const theme = useTheme();
-	const isBelowMd = useMediaQuery(theme.breakpoints.down("md"));
-
 	return (
 		<div>
 			<Box

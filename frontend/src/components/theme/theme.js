@@ -14,13 +14,13 @@ export const themeSettings = (mode) => {
 					body: {
 						scrollbarColor: "#6b6b6b #2b2b2b",
 						"&::-webkit-scrollbar, & *::-webkit-scrollbar": {
-							backgroundColor: "#2b2b2b",
+							backgroundColor: mode === "dark" ? "#1a1a1b" : "#fff",
 						},
 						"&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb": {
 							borderRadius: 8,
-							backgroundColor: "#6b6b6b",
+							backgroundColor: mode === "dark" ? "#282A3A" : "#E4DCCF",
 							minHeight: 24,
-							border: "3px solid #2b2b2b",
+							border: `3px solid ${mode === "dark" ? "#1a1a1b" : "#fff"}`,
 						},
 						"&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus":
 							{
@@ -36,6 +36,16 @@ export const themeSettings = (mode) => {
 							},
 						"&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner": {
 							backgroundColor: "#2b2b2b",
+						},
+					},
+				},
+			},
+			MuiMenu: {
+				styleOverrides: {
+					list: {
+						// eslint-disable-next-line quotes
+						'&[role="menu"]': {
+							backgroundColor: mode === "dark" ? "#1a1a1b" : "#fff",
 						},
 					},
 				},

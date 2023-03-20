@@ -85,7 +85,12 @@ const NotificationMenu = ({
 					sx={{ textDecoration: "none" }}
 				>
 					<MenuItem>
-						<Stack direction="row" spacing={1} alignItems="center">
+						<Stack
+							direction="row"
+							spacing={2}
+							alignItems="center"
+							sx={{ p: "0.5rem" }}
+						>
 							<Avatar
 								alt="User Image"
 								sx={{
