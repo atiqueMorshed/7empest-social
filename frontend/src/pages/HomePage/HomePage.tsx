@@ -1,20 +1,26 @@
-import { Box } from "@mui/material";
+import { Box, Container, useTheme } from "@mui/material";
 import Connections from "../../components/Connections/Connections";
+import PostsColumn from "../../components/Posts/PostsColumn";
+import ProfileColumn from "../../components/Profile/ProfileColumn";
 
 const HomePage = () => {
+	const theme = useTheme();
+	// const isBelowMd = use
 	return (
-		<div>
+		<Container maxWidth="xl">
 			<Box
 				sx={{
-					display: { xs: "block", md: "flex" },
+					display: "flex",
 					gap: 1,
-					justifyContent: "space-between",
-					p: "1rem 5%",
+					justifyContent: { xs: "center", md: "space-between" },
+					pt: { xs: "5rem", md: "7rem" },
 				}}
 			>
 				<Connections />
+				<PostsColumn />
+				<ProfileColumn />
 			</Box>
-		</div>
+		</Container>
 	);
 };
 

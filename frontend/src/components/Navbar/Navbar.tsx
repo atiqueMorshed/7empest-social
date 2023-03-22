@@ -58,7 +58,7 @@ const Navbar = () => {
 
 	return (
 		<AppBar
-			position="static"
+			// position="static"
 			sx={{ backgroundColor: "background.default", color: "text.primary" }}
 		>
 			<Container maxWidth="xl">

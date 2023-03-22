@@ -147,8 +147,6 @@ const usersApi = apiSlice.injectEndpoints({
 											...result.data.user.followers,
 										];
 										draft.totalFollowers = result.data.totalFollowers;
-										console.log(draft.totalFollowers);
-										console.log(draft.user.followers.length);
 									}
 								},
 							),

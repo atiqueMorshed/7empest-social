@@ -25,6 +25,9 @@ const Connections = () => {
 					alignItems: "center",
 					gap: "1rem",
 					pt: "1rem",
+					height: "100%",
+					top: 113 /* sticky needs top positioning to work*/,
+					position: "sticky",
 				}}
 			>
 				<Tabs

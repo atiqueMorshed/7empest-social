@@ -1,10 +1,4 @@
-import {
-	Box,
-	CircularProgress,
-	Typography,
-	useMediaQuery,
-	useTheme,
-} from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useAppDispatch } from "../../app/hooks";
@@ -16,9 +10,6 @@ type iProps = {
 };
 
 const Followings = ({ username }: iProps) => {
-	const theme = useTheme();
-	const [height, setHeight] = useState("612px");
-
 	const [page, setPage] = useState(0);
 	const [limit, setLimit] = useState(5);
 
@@ -27,13 +18,6 @@ const Followings = ({ username }: iProps) => {
 	const dispatch = useAppDispatch();
 
 	const { isLoading, isSuccess, data } = useGetFollowingsQuery(username);
-
-	const isBelowLG = useMediaQuery(theme.breakpoints.down("lg"));
-
-	useEffect(() => {
-		if (isBelowLG) setHeight("466px");
-		else setHeight("612px");
-	}, [isBelowLG]);
 
 	useEffect(() => {
 		if (page > 0)
@@ -80,7 +64,7 @@ const Followings = ({ username }: iProps) => {
 					height: "100%",
 					gap: "1rem",
 					width: { xs: "100%", sm: "300px" },
-					pl: 2,
+					py: "2rem",
 				}}
 			>
 				<CircularProgress sx={{ color: "primary.light" }} />
@@ -108,7 +92,7 @@ const Followings = ({ username }: iProps) => {
 						<CircularProgress />
 					</Box>
 				}
-				height={height}
+				height="70vh"
 			>
 				<Box
 					sx={{
@@ -144,9 +128,10 @@ const Followings = ({ username }: iProps) => {
 					justifyContent: "center",
 					alignItems: "center",
 					height: "100%",
-					gap: "1rem",
 					width: { xs: "100%", sm: "300px" },
+					gap: "1rem",
 					pl: 2,
+					py: "2rem",
 				}}
 			>
 				<Typography variant="h4">No followings found.</Typography>
@@ -158,7 +143,7 @@ const Followings = ({ username }: iProps) => {
 		<Box
 			sx={{
 				mt: "1rem",
-				// height: "70vh",
+				height: "70vh",
 				overflowY: "auto",
 				overflowX: "hidden",
 			}}

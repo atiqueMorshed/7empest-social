@@ -38,6 +38,7 @@ const PersonCard = ({
 		followerTotal,
 		followingTotal,
 	},
+	fromConnection,
 	setSearchTerm,
 	isLastIndex,
 }: iProps) => {
@@ -119,6 +120,7 @@ const PersonCard = ({
 						flexDirection: "column",
 						alignItems: "space-between",
 						gap: 1,
+						width: fromConnection ? "140px" : "100%",
 					}}
 				>
 					<Link
