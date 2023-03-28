@@ -2,6 +2,7 @@ import { Box, CssBaseline } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useEffect, useMemo, useRef } from "react";
 
+import { SnackbarProvider } from "notistack";
 import { Route, Routes } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useAppSelector } from "./app/hooks";
@@ -41,37 +42,39 @@ const App = () => {
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
-			<Box
-				sx={{
-					backgroundColor: "background.default",
-					minHeight: "100vh",
-					color: "text.primary",
-				}}
-			>
-				<Navbar />
-				<Routes>
-					<Route path="/login" element={<LoginPage />} />
-					<Route path="/register" element={<RegisterPage />} />
-					<Route
-						path="/"
-						element={
-							<ProtectedRoute>
-								<HomePage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route
-						path="/secret"
-						element={
-							<ProtectedRoute>
-								<SecretPage />
-							</ProtectedRoute>
-						}
-					/>
-					<Route path="/profile/:username" element={<ProfilePage />} />
-					<Route path="*" element={<NotFoundPage />} />
-				</Routes>
-			</Box>
+			<SnackbarProvider autoHideDuration={5000} maxSnack={1}>
+				<Box
+					sx={{
+						backgroundColor: "background.default",
+						minHeight: "100vh",
+						color: "text.primary",
+					}}
+				>
+					<Navbar />
+					<Routes>
+						<Route path="/login" element={<LoginPage />} />
+						<Route path="/register" element={<RegisterPage />} />
+						<Route
+							path="/"
+							element={
+								<ProtectedRoute>
+									<HomePage />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/secret"
+							element={
+								<ProtectedRoute>
+									<SecretPage />
+								</ProtectedRoute>
+							}
+						/>
+						<Route path="/profile/:username" element={<ProfilePage />} />
+						<Route path="*" element={<NotFoundPage />} />
+					</Routes>
+				</Box>
+			</SnackbarProvider>
 		</ThemeProvider>
 	);
 };

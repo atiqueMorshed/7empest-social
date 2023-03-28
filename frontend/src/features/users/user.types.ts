@@ -84,7 +84,7 @@ export const addRemoveFollowingsSchema = yup.object({
 		followingTotal: yup.number().required().positive().integer(),
 	}),
 	followedUser: yup.object({
-		_id: yup.string(),
+		_id: yup.string().required(),
 		firstname: yup.string().required(),
 		lastname: yup.string().required(),
 		avatar: yup.string().optional(),
