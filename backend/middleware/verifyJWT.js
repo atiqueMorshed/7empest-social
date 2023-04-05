@@ -6,8 +6,8 @@ import clearRefreshCookie from "../utils/clearRefreshCookie.js";
 const verifyJWT = async (req, res, next) => {
 	// console.log("-> verifyJWT");
 
-	if (!req?.socket_users) {
-	}
+	// if (!req?.socket_users) {
+	// }
 
 	const refreshToken = req.cookies?.tempestRefreshToken;
 

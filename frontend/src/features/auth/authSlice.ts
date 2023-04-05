@@ -33,10 +33,21 @@ const authSlice = createSlice({
 			// console.log("IN GET USER");
 			state.user = action.payload;
 		},
+		setUpdatedFollowerTotal: (state, action) => {
+			// console.log("IN GET USER");
+			if (state?.user?._id) {
+				state.user.followerTotal = action.payload;
+			}
+		},
 	},
 });
 
-export const { setCredentials, removeCredentials, setUser } = authSlice.actions;
+export const {
+	setCredentials,
+	removeCredentials,
+	setUser,
+	setUpdatedFollowerTotal,
+} = authSlice.actions;
 
 export default authSlice.reducer;
 

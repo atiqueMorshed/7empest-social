@@ -9,6 +9,13 @@ export const availableCategoryOptions = [
 	"IRL",
 	"Uncategorized",
 ];
+export const tagSchema = yup
+	.string()
+	.min(3, "Atleast 3 characters.")
+	.max(20, "Maximum 20 char per tag.")
+	.trim("Leading and trailing whitespace")
+	.matches(/^[A-Za-z0-9\-_]+$/, "Only alphanumeric, '-', '_' allowed.")
+	.optional();
 
 export const createPostSchema = yup.object({
 	title: yup
@@ -29,8 +36,9 @@ export const createPostSchema = yup.object({
 		.string()
 		.min(3, "Atleast 3 characters.")
 		.max(50, "Maximum limit reached.")
-		.trim("Leading and trailing whitespace")
+
 		.matches(/^[A-Za-z0-9\-_,]+$/, "Only alphanumeric, '-', '_' allowed.")
 		.optional(),
 });
+
 export type CreatePostType = yup.InferType<typeof createPostSchema>;

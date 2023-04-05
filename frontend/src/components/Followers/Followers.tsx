@@ -2,6 +2,7 @@ import { Box, CircularProgress, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useAppDispatch } from "../../app/hooks";
+import { setUpdatedFollowerTotal } from "../../features/auth/authSlice";
 import usersApi, { useGetFollowersQuery } from "../../features/users/usersApi";
 import PersonCard from "../Navbar/SearchPeople/PersonCard";
 
@@ -18,6 +19,11 @@ const Followers = ({ username }: iProps) => {
 	const dispatch = useAppDispatch();
 
 	const { isLoading, isSuccess, data } = useGetFollowersQuery(username);
+
+	useEffect(() => {
+		if (data?.totalFollowers && data?.totalFollowers >= 0)
+			dispatch(setUpdatedFollowerTotal(data.totalFollowers));
+	}, [data, dispatch]);
 
 	useEffect(() => {
 		if (page > 0)

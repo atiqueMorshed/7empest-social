@@ -19,7 +19,7 @@ import {
 	CreatePostType,
 	availableCategoryOptions,
 	createPostSchema,
-} from "./createPosts.types";
+} from "./posts.types";
 
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -317,7 +317,7 @@ const CreatePost = () => {
 													);
 													setPreviews(generatePreviews);
 													setImages(acceptedFiles);
-													setImageError([]);
+													// setImageError([]);
 												}}
 												onDropRejected={(rejectedFiles) => {
 													setPreviews([]);

@@ -1,10 +1,13 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
 
+import { useAppSelector } from "../../app/hooks";
 import { useGetPostsQuery } from "../../features/posts/postsApi";
+import { selectFilters } from "../../features/posts/postsSlice";
 import Post from "./Post/Post";
 
 const FetchedPosts = () => {
-	const { isSuccess, isLoading, data } = useGetPostsQuery();
+	const filters = useAppSelector(selectFilters);
+	const { isSuccess, isLoading, data } = useGetPostsQuery(filters);
 
 	let content;
 	if (isLoading) {

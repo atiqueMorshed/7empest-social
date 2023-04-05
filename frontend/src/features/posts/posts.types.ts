@@ -32,6 +32,13 @@ export const postSchema = yup.object({
 	isUserDownvoted: yup.boolean(),
 });
 
+export const filterSchema = yup.object({
+	tags: yup.array().of(yup.string()).max(5, "Maxmum 5 tags."),
+	privacy: yup.string().optional(),
+	category: yup.string().optional(),
+	sort: yup.string().optional(),
+});
+
 export type CommentType = yup.InferType<typeof commentSchema>;
 export type CommentsType = CommentType[];
 
@@ -42,3 +49,5 @@ export type PostsReturnType = {
 	success: boolean;
 	posts: PostsType;
 };
+
+export type FilterType = yup.InferType<typeof filterSchema>;

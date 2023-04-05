@@ -185,16 +185,18 @@ const Post = ({
 
 			{/* Post Images */}
 			{postImage && postImage?.length === 1 && (
-				<ImageGallery
-					items={[
-						{
-							original: `http://localhost:4000/assets/post_images/${postImage[0]}`,
-						},
-					]}
-					showNav={false}
-					useBrowserFullscreen={false}
-					showPlayButton={false}
-				/>
+				<Box sx={{ width: "full" }}>
+					<ImageGallery
+						items={[
+							{
+								original: `http://localhost:4000/assets/post_images/${postImage[0]}`,
+							},
+						]}
+						showNav={false}
+						useBrowserFullscreen={false}
+						showPlayButton={false}
+					/>
+				</Box>
 			)}
 			{postImage && postImage?.length > 1 && (
 				<ImageGallery
@@ -202,6 +204,10 @@ const Post = ({
 						original: `http://localhost:4000/assets/post_images/${img}`,
 						thumbnail: `http://localhost:4000/assets/post_images/${img}`,
 					}))}
+					useBrowserFullscreen={false}
+					showPlayButton={false}
+					showThumbnails={false}
+					showBullets={true}
 				/>
 			)}
 

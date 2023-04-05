@@ -1,5 +1,5 @@
 import apiSlice from "../api/apiSlice";
-import { PostsReturnType } from "./posts.types";
+import { FilterType, PostsReturnType } from "./posts.types";
 
 const postsApi = apiSlice.injectEndpoints({
 	endpoints: (builder) => ({
@@ -10,10 +10,12 @@ const postsApi = apiSlice.injectEndpoints({
 				body: data,
 			}),
 		}),
-		getPosts: builder.query<PostsReturnType, void>({
-			query: () => ({
-				url: "/posts",
+		getPosts: builder.query<PostsReturnType, FilterType>({
+			query: (args) => ({
+				// args = {tags, privacy, category, sort}
+				url: "/posts/",
 				method: "GET",
+				params: args,
 			}),
 		}),
 	}),

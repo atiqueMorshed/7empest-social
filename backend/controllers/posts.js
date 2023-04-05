@@ -28,28 +28,46 @@ export const getUserPosts = expressAsyncHandler(async (req, res, next) => {
 // @access Private
 // @desc Get Feed Posts
 // @route /api/posts/ GET
-// @req.body category, tags, sortBy, sortOrder, followingOnlyPosts
+// @req.params tags, category, privacy, sort
 // @req.user _id
 export const getFeedPosts = expressAsyncHandler(async (req, res) => {
-	const { category, tags, sortBy, sortOrder, followingOnlyPosts } = req.body;
-	const { _id } = req.user;
+	const { tags, category, privacy, sort } = req.query;
 
-	const filter = { tags: { $in: tags }, privacy: "public" };
-	if (category !== "all" || category !== "") filter.category = category;
+	const filter = {
+		privacy: {
+			$in: ["public"],
+		},
+	};
+	if (tags?.length > 0) {
+		const tagsArray = tags.split(",");
+		filter.tags = { $in: tagsArray };
+	}
 
-	if (followingOnlyPosts) {
+	const sortDate = { postedOn: sort === "asc" ? 1 : -1 };
+
+	if (category && category !== "All") filter.category = category;
+
+	if (privacy === "followersOnly") {
 		// Get Posts Only by people you are following.
-		const userFollowingsPosts = await User.findById(_id, "_id").populate(
+		filter.privacy = {
+			$in: ["public", "followersOnly"],
+		};
+		const userFollowingsPosts = await User.findById(req.userId, "_id").populate(
 			"followings",
 			"posts",
 		);
-		const postIds = userFollowingsPosts.followings.map(({ posts }) => posts);
+		let postIds = [];
+		userFollowingsPosts.followings?.forEach(({ posts }) => {
+			if (posts?.length > 0) postIds.push(...posts);
+		});
 
 		if (postIds?.length > 0) filter._id = { $in: postIds };
 	}
 
-	const posts = await Post.find(filter).sort({ [sortBy]: sortOrder });
+	console.log(filter);
+	console.log(sortDate);
 
+	const posts = await Post.find(filter).sort(sortDate);
 	res.status(200).json({ success: true, posts });
 });
 
@@ -59,15 +77,27 @@ export const getFeedPosts = expressAsyncHandler(async (req, res) => {
 // @req.body _id, title, description, postImagePath, privacy, category, tags
 // @req.user _id
 export const createPost = expressAsyncHandler(async (req, res, next) => {
-	const { title, description, postImagePath, privacy, category, tags } =
-		req.body;
-	const { _id } = req.user;
+	const { _id, title, description, privacy, category, tags } = req.body;
+
+	let tagArray;
+	if (tags?.length > 2) {
+		tagArray = tags?.split(",");
+		tagArray = tagArray.map((t) => t.replaceAll(/[, ]/g, ""));
+		tagArray = tagArray.filter((t) => t.length > 2);
+	}
 
 	if (!_id) return next(new ErrorResponse("Missing user information.", 404));
+	if (!title || !privacy || !category)
+		return next(new ErrorResponse("Required content missing.", 404));
+
+	let files = [];
+	if (req?.files?.length > 0) {
+		files = req.files.map((file) => file.filename);
+	}
 
 	const user = await User.findById(
 		_id,
-		"username, firstname, lastname, avatarPath, location",
+		"username firstname lastname avatar location posts",
 	);
 
 	const post = await Post.create({
@@ -75,14 +105,14 @@ export const createPost = expressAsyncHandler(async (req, res, next) => {
 		username: user.username,
 		firstname: user.firstname,
 		lastname: user.lastname,
-		avatarPath: user.avatarPath,
+		avatar: user.avatar,
 		location: user.location,
 		title,
 		description,
-		postImagePath,
+		postImage: files,
 		privacy,
 		category,
-		tags,
+		tags: tagArray,
 	});
 
 	if (!post) return next(new ErrorResponse("Post creation failed.", 409));

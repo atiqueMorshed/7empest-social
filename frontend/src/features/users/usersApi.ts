@@ -67,6 +67,7 @@ const usersApi = apiSlice.injectEndpoints({
 				method: "GET",
 			}),
 			providesTags: ["GetFollowers"],
+
 			async onCacheEntryAdded(
 				username,
 				{ cacheDataLoaded, updateCachedData, cacheEntryRemoved },
@@ -258,7 +259,7 @@ const usersApi = apiSlice.injectEndpoints({
 			}),
 			// Invalidates /auth/getUser, /users/findUsers | findMoreUsers, /users/getFollowStatus
 			invalidatesTags: (result, error, arg) => [
-				{ type: "AuthUser", id: "CURRENT" },
+				"AuthUser",
 				{ type: "FollowStatus", id: arg },
 			],
 			async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
