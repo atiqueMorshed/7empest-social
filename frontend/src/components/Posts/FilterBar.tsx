@@ -8,41 +8,56 @@ import {
 	Typography,
 	useTheme,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "react-tagsinput/react-tagsinput.css";
-import { useAppDispatch } from "../../app/hooks";
-import { setFilters } from "../../features/posts/postsSlice";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import {
+	addTag,
+	removeTag,
+	selectCategory,
+	selectPrivacy,
+	selectSort,
+	selectTags,
+	setCategory,
+	setPrivacy,
+	setSort,
+} from "../../features/posts/postsSlice";
 import { availableCategoryOptions } from "./posts.types";
 
 const FilterBar = () => {
-	const [tags, setTags] = useState<string[]>([]);
-
-	const [tag, setTag] = useState<string>("");
-	const [privacy, setPrivacy] = useState("");
-	const [category, setCategory] = useState("");
-	const [sort, setSort] = useState("");
-
-	const [tagError, setTagError] = useState("");
+	const tags = useAppSelector(selectTags);
+	const category = useAppSelector(selectCategory);
+	const privacy = useAppSelector(selectPrivacy);
+	const sort = useAppSelector(selectSort);
 
 	const theme = useTheme();
 	const dispatch = useAppDispatch();
 
-	useEffect(() => {
-		dispatch(setFilters({ tags, privacy, category, sort }));
-	}, [tags, privacy, category, sort, dispatch]);
+	const [tag, setTag] = useState<string>("");
+
+	// const [tags, setTags] = useState<string[]>([]);
+	// const [privacy, setPrivacy] = useState("");
+	// const [category, setCategory] = useState("");
+	// const [sort, setSort] = useState("");
+
+	const [tagError, setTagError] = useState("");
+
+	// useEffect(() => {
+	// 	dispatch(setFilters({ tags, privacy, category, sort }));
+	// }, [tags, privacy, category, sort, dispatch]);
 
 	const handleTags = () => {
 		if (tag === "") setTagError("");
 		else if (tags.length > 4) {
 			setTagError("Maximum 5 tags");
-		} else if (tags?.find((t) => t.toLowerCase() === tag.toLowerCase())) {
+		} else if (tags?.find((t) => t?.toLowerCase() === tag.toLowerCase())) {
 			setTagError("Cannot have duplicate tags.");
 		} else if (typeof tag === "string" && tag.length > 2) {
 			const regex = /^[A-Za-z0-9\-_]{3,20}$/;
 			const isMatch = tag.match(regex);
 			if (isMatch) {
 				setTagError("");
-				setTags([...tags, tag]);
+				dispatch(addTag(tag));
 				setTag("");
 			} else {
 				setTagError("Must be between 3-20 chars and only alphanumeric, -, _");
@@ -101,7 +116,7 @@ const FilterBar = () => {
 					select
 					label="Privacy"
 					name="privacy"
-					onChange={(e) => setPrivacy(e.target.value)}
+					onChange={(e) => dispatch(setPrivacy(e.target.value))}
 					value={privacy}
 					size="small"
 					sx={{ width: "100px" }}
@@ -114,7 +129,7 @@ const FilterBar = () => {
 					select
 					label="Category"
 					name="category"
-					onChange={(e) => setCategory(e.target.value)}
+					onChange={(e) => dispatch(setCategory(e.target.value))}
 					value={category}
 					size="small"
 					sx={{ width: "115px" }}
@@ -130,13 +145,13 @@ const FilterBar = () => {
 					select
 					label="Sort"
 					name="sort"
-					onChange={(e) => setSort(e.target.value)}
+					onChange={(e) => dispatch(setSort(e.target.value))}
 					value={sort}
 					size="small"
 					sx={{ width: "80px" }}
 				>
 					<MenuItem value="asc">Asc</MenuItem>
-					<MenuItem value="desc">Des</MenuItem>
+					<MenuItem value="des">Des</MenuItem>
 				</TextField>
 			</Box>
 			{tags?.length > 0 && (
@@ -162,9 +177,7 @@ const FilterBar = () => {
 							}}
 						>
 							<Typography variant="body2">{tag}</Typography>
-							<IconButton
-								onClick={() => setTags(tags.filter((t) => t !== tag))}
-							>
+							<IconButton onClick={() => dispatch(removeTag(tag))}>
 								<CloseIcon sx={{ fontSize: "12px" }} />
 							</IconButton>
 						</Box>

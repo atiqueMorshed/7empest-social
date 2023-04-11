@@ -1,6 +1,0 @@
-{
-  "devDependencies": {
-    "@types/react-show-more-text": "^1.4.2",
-    "eslint-plugin-react-hooks": "^4.6.0"
-  }
-}

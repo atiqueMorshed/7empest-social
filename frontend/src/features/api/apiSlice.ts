@@ -85,6 +85,7 @@ const apiSlice = createApi({
 		"GetFollowings",
 		"GetFollowers",
 		"GetNotifications",
+		"GetPosts",
 	],
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	endpoints: (builder) => ({}),

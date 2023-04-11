@@ -33,10 +33,11 @@ export const postSchema = yup.object({
 });
 
 export const filterSchema = yup.object({
-	tags: yup.array().of(yup.string()).max(5, "Maxmum 5 tags."),
+	tags: yup.array().of(yup.string()).max(5, "Maxmum 5 tags.").required(),
 	privacy: yup.string().optional(),
 	category: yup.string().optional(),
 	sort: yup.string().optional(),
+	page: yup.number().optional(),
 });
 
 export type CommentType = yup.InferType<typeof commentSchema>;
@@ -48,6 +49,7 @@ export type PostsType = PostType[];
 export type PostsReturnType = {
 	success: boolean;
 	posts: PostsType;
+	totalPosts: number;
 };
 
 export type FilterType = yup.InferType<typeof filterSchema>;

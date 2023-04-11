@@ -32,6 +32,22 @@ export const getUserPosts = expressAsyncHandler(async (req, res, next) => {
 // @req.user _id
 export const getFeedPosts = expressAsyncHandler(async (req, res) => {
 	const { tags, category, privacy, sort } = req.query;
+	console.log(req.query);
+	const { page } = req.params;
+
+	let currPage = 0;
+	try {
+		currPage = parseInt(page);
+	} catch (err) {
+		currPage = 0;
+	}
+
+	let limit = 5;
+	try {
+		limit = parseInt(process.env.POSTS_LIMIT_PER_PAGE);
+	} catch (error) {
+		limit = 5;
+	}
 
 	const filter = {
 		privacy: {
@@ -64,11 +80,19 @@ export const getFeedPosts = expressAsyncHandler(async (req, res) => {
 		if (postIds?.length > 0) filter._id = { $in: postIds };
 	}
 
-	console.log(filter);
-	console.log(sortDate);
+	// console.log(filter);
+	// console.log(sortDate);
 
-	const posts = await Post.find(filter).sort(sortDate);
-	res.status(200).json({ success: true, posts });
+	const posts = await Post.find(filter)
+		.limit(limit)
+		.skip(currPage * limit)
+		.sort(sortDate);
+
+	const totalPosts = await Post.count(filter);
+
+	console.log({ currPage, limit, totalPosts });
+
+	res.status(200).json({ success: true, posts, totalPosts });
 });
 
 // @access Private
@@ -119,6 +143,8 @@ export const createPost = expressAsyncHandler(async (req, res, next) => {
 
 	user.posts.push(post._id);
 	user.save();
+
+	req.io.of("/newpost").emit("newPost", post);
 
 	res.status(201).json({ success: true, post });
 });

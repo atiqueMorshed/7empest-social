@@ -88,6 +88,7 @@ const RegisterPage = () => {
 					sm: "520px",
 					md: "620px",
 				},
+				mt: 16,
 			}}
 		>
 			<Box

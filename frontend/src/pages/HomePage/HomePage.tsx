@@ -1,10 +1,10 @@
-import { Box, Container, useTheme } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import Connections from "../../components/Connections/Connections";
 import PostsColumn from "../../components/Posts/PostsColumn";
 import ProfileColumn from "../../components/Profile/ProfileColumn";
 
 const HomePage = () => {
-	const theme = useTheme();
+	// const theme = useTheme();
 	// const isBelowMd = use
 	return (
 		<Container maxWidth="xl">

@@ -20,10 +20,38 @@ const postsSlice = createSlice({
 			state.privacy = !privacy ? "public" : privacy;
 			state.sort = !sort ? "des" : sort;
 		},
+		addTag: (state, action) => {
+			if (!state.tags.includes(action.payload))
+				state.tags?.push(action.payload);
+		},
+		removeTag: (state, action) => {
+			state.tags = state.tags.filter((t) => t !== action.payload);
+		},
+
+		setCategory: (state, action) => {
+			state.category = action.payload;
+		},
+		setPrivacy: (state, action) => {
+			state.privacy = action.payload;
+		},
+		setSort: (state, action) => {
+			state.sort = action.payload;
+		},
 	},
 });
 
-export const { setFilters } = postsSlice.actions;
+export const {
+	setFilters,
+	addTag,
+	removeTag,
+	setCategory,
+	setPrivacy,
+	setSort,
+} = postsSlice.actions;
 export default postsSlice.reducer;
 
 export const selectFilters = (state: RootState) => state.posts;
+export const selectTags = (state: RootState) => state.posts.tags;
+export const selectCategory = (state: RootState) => state.posts.category;
+export const selectPrivacy = (state: RootState) => state.posts.privacy;
+export const selectSort = (state: RootState) => state.posts.sort;

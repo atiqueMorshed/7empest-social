@@ -8,7 +8,13 @@ import { Avatar, Box, IconButton, Typography, useTheme } from "@mui/material";
 import { formatDistance } from "date-fns";
 import { useState } from "react";
 import ImageGallery from "react-image-gallery";
+import { useAppDispatch } from "../../../app/hooks";
 import { PostType } from "../../../features/posts/posts.types";
+import {
+	addTag,
+	setCategory,
+	setPrivacy,
+} from "../../../features/posts/postsSlice";
 import Comments from "./Comments";
 type iProps = {
 	post: PostType;
@@ -35,6 +41,7 @@ const Post = ({
 }: iProps) => {
 	const theme = useTheme();
 	const [toggleComment, setToggleComment] = useState(false);
+	const dispatch = useAppDispatch();
 
 	return (
 		<Box
@@ -106,6 +113,7 @@ const Post = ({
 							duration: theme.transitions.duration.standard,
 						}),
 					}}
+					onClick={() => dispatch(setCategory(category))}
 				>
 					<CategoryIcon sx={{ fontSize: "12px" }} />
 					<Typography variant="body2">{category}</Typography>
@@ -125,6 +133,7 @@ const Post = ({
 							duration: theme.transitions.duration.standard,
 						}),
 					}}
+					onClick={() => dispatch(setPrivacy(privacy))}
 				>
 					<Typography sx={{ fontSize: "12px" }}>
 						{privacy.toUpperCase()}
@@ -150,6 +159,7 @@ const Post = ({
 					{tags.map((tag) => (
 						<Box
 							key={tag}
+							onClick={() => dispatch(addTag(tag))}
 							sx={{
 								display: "flex",
 								alignItems: "center",
