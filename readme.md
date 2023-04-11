@@ -39,4 +39,4 @@
 - Nodemailer
 - JSON Web Token
 - Cookie Parser
-- Docker.
+- Docker
